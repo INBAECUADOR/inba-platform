@@ -1,0 +1,2 @@
+-- Roles ya insertados en migración, esto es para referencia
+-- Los roles se insertan en la migración 001_schema.sql
