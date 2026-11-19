@@ -8,11 +8,13 @@ Estado verificado el **2026-11-18**.
 
 `supabase/complete_deployment.sql` contiene, en orden y ya validado:
 
-1. Esquema completo (34 tablas, 53 índices, 27 triggers, 5 funciones).
+1. Esquema completo (34 tablas, 53 índices, 28 triggers, 6 funciones).
 2. Helper de autorización `is_admin()` / `is_staff()` (SECURITY DEFINER).
-3. Políticas RLS (70) para **todas** las tablas con RLS activo.
+3. Políticas RLS (71) para **todas** las tablas con RLS activo.
 4. RPC `verificar_certificado(uuid)` para verificación pública.
-5. Semillas del curso, 12 módulos, 52 lecciones, 12 evaluaciones y CMS.
+5. Trigger `on_auth_user_created`: crea el perfil y asigna el rol `estudiante`
+   al registrarse (antes el registro dejaba al usuario sin perfil ni rol).
+6. Semillas del curso, 12 módulos, 52 lecciones, 12 evaluaciones y CMS.
 
 Los archivos `supabase/seed/*.sql` y `supabase/migrations/001_schema.sql` quedaron
 **obsoletos**: contienen errores que ya están corregidos en el archivo único

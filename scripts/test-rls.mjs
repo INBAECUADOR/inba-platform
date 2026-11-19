@@ -23,7 +23,7 @@ const ID_C = '33333333-3333-3333-3333-333333333333' // admin
 
 const bootstrap = `
 CREATE SCHEMA IF NOT EXISTS auth;
-CREATE TABLE IF NOT EXISTS auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text);
+CREATE TABLE IF NOT EXISTS auth.users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text, raw_user_meta_data jsonb DEFAULT '{}'::jsonb);
 CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$
   SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
 $$;
@@ -101,11 +101,12 @@ INSERT INTO auth.users (id, email) VALUES
 INSERT INTO profiles (id, email, full_name) VALUES
   ('${ID_A}', 'a@test.local', 'Estudiante A'),
   ('${ID_B}', 'b@test.local', 'Estudiante B'),
-  ('${ID_C}', 'c@test.local', 'Admin C');
+  ('${ID_C}', 'c@test.local', 'Admin C')
+ON CONFLICT (id) DO UPDATE SET full_name = EXCLUDED.full_name;
 
-INSERT INTO user_roles (user_id, role_id) SELECT '${ID_A}', id FROM roles WHERE name = 'estudiante';
-INSERT INTO user_roles (user_id, role_id) SELECT '${ID_B}', id FROM roles WHERE name = 'estudiante';
-INSERT INTO user_roles (user_id, role_id) SELECT '${ID_C}', id FROM roles WHERE name = 'admin_general';
+INSERT INTO user_roles (user_id, role_id) SELECT '${ID_A}', id FROM roles WHERE name = 'estudiante' ON CONFLICT DO NOTHING;
+INSERT INTO user_roles (user_id, role_id) SELECT '${ID_B}', id FROM roles WHERE name = 'estudiante' ON CONFLICT DO NOTHING;
+INSERT INTO user_roles (user_id, role_id) SELECT '${ID_C}', id FROM roles WHERE name = 'admin_general' ON CONFLICT DO NOTHING;
 
 INSERT INTO matriculas (user_id, curso_id, estado, fecha_inicio) VALUES
   ('${ID_A}', '${curso}', 'activa', CURRENT_DATE),
@@ -119,6 +120,15 @@ INSERT INTO audit_logs (user_id, accion, entidad) VALUES ('${ID_C}', 'TEST', 'cu
 `)
 
 const results = []
+
+// El trigger on_auth_user_created debe haber creado perfiles y rol estudiante
+{
+  const prof = (await db.query(`SELECT count(*)::int n FROM profiles`)).rows[0].n
+  const rol = (await db.query(`SELECT count(*)::int n FROM user_roles WHERE role_id = (SELECT id FROM roles WHERE name='estudiante')`)).rows[0].n
+  results.push({ name: 'Trigger crea perfiles al registrar', expect: 3, got: String(prof), pass: prof === 3 })
+  results.push({ name: 'Trigger asigna rol estudiante por defecto', expect: 3, got: String(rol), pass: rol === 3 })
+}
+
 async function check(name, fn, expectation) {
   try {
     const value = await fn()
