@@ -30,6 +30,8 @@ VALUES (
 DO $$
 DECLARE
   v_curso_id UUID;
+  v_modulo_id UUID;
+  v_eval_id UUID;
 BEGIN
   SELECT id INTO v_curso_id FROM cursos WHERE codigo = 'CERT-ENT-2026';
 
@@ -64,7 +66,7 @@ BEGIN
 El culturismo natural comparte estos objetivos, pero incorpora el compromiso con el deporte libre de sustancias prohibidas. La condición de atleta natural no se determina únicamente por su apariencia física: depende de los criterios de elegibilidad, controles y normas de la organización deportiva correspondiente.',
       'objetivos', '["Definir culturismo natural", "Identificar criterios de juicio", "Diferenciar natural vs asistido"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = v_modulo_id AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -86,7 +88,7 @@ El culturismo natural comparte estos objetivos, pero incorpora el compromiso con
 6. **Adherencia**: un programa eficaz debe ser viable y sostenible para la persona.',
       'objetivos', '["Explicar cada principio", "Aplicar a casos prácticos"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = v_modulo_id AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -100,7 +102,7 @@ Debe comunicar con claridad, respetar la privacidad del atleta, evitar promesas 
 **Actividad**: el estudiante explica con sus propias palabras qué diferencia al culturismo natural de una preparación enfocada exclusivamente en la apariencia.',
       'objetivos', '["Definir rol del entrenador", "Identificar límites profesionales"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = v_modulo_id AND t.orden = 3;
 
   -- Recursos Módulo 1

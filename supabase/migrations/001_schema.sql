@@ -43,6 +43,46 @@ CREATE TABLE user_roles (
 );
 
 -- ============================================
+-- HELPERS DE AUTORIZACION
+-- ============================================
+-- IMPORTANTE: estas funciones son SECURITY DEFINER para que puedan leer
+-- user_roles sin disparar su propia politica RLS. Sin esto, cualquier
+-- politica que consulte user_roles provoca:
+--   ERROR: infinite recursion detected in policy for relation "user_roles"
+
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = auth.uid()
+      AND r.name IN ('admin_general', 'admin_academico')
+  )
+$$;
+
+CREATE OR REPLACE FUNCTION is_staff()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM user_roles ur
+    JOIN roles r ON r.id = ur.role_id
+    WHERE ur.user_id = auth.uid()
+      AND r.name IN ('admin_general', 'admin_academico', 'docente')
+  )
+$$;
+
+-- ============================================
 -- AFILIACIONES
 -- ============================================
 
@@ -177,9 +217,10 @@ CREATE TABLE matriculas (
   aprobado_por UUID REFERENCES profiles(id),
   aprobado_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE (user_id, curso_id) WHERE estado IN ('pendiente', 'activa')
+  updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX unique_active_enrollment ON matriculas (user_id, curso_id) WHERE estado IN ('pendiente', 'activa');
 
 CREATE TABLE progreso_lecciones (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -293,7 +334,7 @@ CREATE TABLE practicas_sesiones (
   sede TEXT NOT NULL,
   direccion TEXT,
   coordenadas_json JSONB,
-  docente_id UUID NOT NULL REFERENCES profiles(id),
+  docente_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   cupo_maximo INTEGER,
   materiales_json JSONB,
   instrucciones TEXT,
@@ -359,9 +400,10 @@ CREATE TABLE certificados (
   motivo_anulacion TEXT,
   anulado_por UUID REFERENCES profiles(id),
   anulado_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE (matricula_id) WHERE estado = 'vigente'
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX unique_vigente_certificado ON certificados (matricula_id) WHERE estado = 'vigente';
 
 CREATE TABLE certificado_config (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -452,7 +494,7 @@ CREATE TABLE noticias (
   published_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
-)
+);
 
 CREATE TABLE documentos_institucionales (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -560,12 +602,13 @@ CREATE POLICY "Users view own profile" ON profiles
 CREATE POLICY "Users update own profile" ON profiles
   FOR UPDATE USING (auth.uid() = id);
 
--- User roles: solo admins gestionan
+-- User roles: cada usuario ve los suyos; los admins gestionan todos.
+-- Se usa is_admin() (SECURITY DEFINER) para evitar recursion infinita de RLS.
+CREATE POLICY "Users view own roles" ON user_roles
+  FOR SELECT USING (user_id = auth.uid());
+
 CREATE POLICY "Admins manage user_roles" ON user_roles
-  FOR ALL USING (EXISTS (
-    SELECT 1 FROM user_roles ur JOIN roles r ON ur.role_id = r.id
-    WHERE ur.user_id = auth.uid() AND r.name = 'admin_general'
-  ));
+  FOR ALL USING (is_admin()) WITH CHECK (is_admin());
 
 -- Cursos: públicos ven publicados, admins/académicos gestionan, docentes ven asignados
 CREATE POLICY "Public view published courses" ON cursos
@@ -665,11 +708,35 @@ CREATE POLICY "Users view own answers" ON respuestas
     )
   );
 
--- Certificados: público verifica por UUID, usuario ve los suyos, admins gestionan
-CREATE POLICY "Public verify certificates" ON certificados
-  FOR SELECT USING (
-    uuid_publico IS NOT NULL
-  );
+-- Certificados: la verificacion publica NO expone la tabla completa.
+-- Se resuelve con verificar_certificado(uuid), que devuelve solo los campos
+-- necesarios para la pagina de verificacion (SECURITY DEFINER).
+CREATE OR REPLACE FUNCTION verificar_certificado(p_uuid uuid)
+RETURNS TABLE (
+  numero_serie text,
+  fecha_emision date,
+  estado text,
+  curso_nombre text,
+  alumno_nombre text,
+  alumno_dni text,
+  autoridad_nombre text,
+  autoridad_cargo text
+)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT c.numero_serie, c.fecha_emision, c.estado,
+         cu.nombre, p.full_name, p.dni,
+         c.autoridad_nombre, c.autoridad_cargo
+  FROM certificados c
+  JOIN cursos cu ON cu.id = c.curso_id
+  JOIN profiles p ON p.id = c.user_id
+  WHERE c.uuid_publico = p_uuid
+$$;
+
+GRANT EXECUTE ON FUNCTION verificar_certificado(uuid) TO anon, authenticated;
 
 CREATE POLICY "Users view own certificates" ON certificados
   FOR SELECT USING (user_id = auth.uid());
@@ -760,19 +827,22 @@ CREATE TRIGGER update_configuracion_updated_at BEFORE UPDATE ON configuracion_in
 
 -- Trigger para auditoría automática
 CREATE OR REPLACE FUNCTION audit_trigger_function()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    INSERT INTO audit_logs (user_id, accion, entidad, entidad_id, datos_nuevos_json, ip, user_agent)
-    VALUES (auth.uid(), 'INSERT', TG_TABLE_NAME, NEW.id, to_jsonb(NEW), inet_client_addr(), current_setting('request.headers')::json->>'user-agent');
+    INSERT INTO audit_logs (user_id, accion, entidad, entidad_id, datos_nuevos_json)
+    VALUES (auth.uid(), 'INSERT', TG_TABLE_NAME, NEW.id, to_jsonb(NEW));
     RETURN NEW;
   ELSIF TG_OP = 'UPDATE' THEN
-    INSERT INTO audit_logs (user_id, accion, entidad, entidad_id, datos_anteriores_json, datos_nuevos_json, ip, user_agent)
-    VALUES (auth.uid(), 'UPDATE', TG_TABLE_NAME, NEW.id, to_jsonb(OLD), to_jsonb(NEW), inet_client_addr(), current_setting('request.headers')::json->>'user-agent');
+    INSERT INTO audit_logs (user_id, accion, entidad, entidad_id, datos_anteriores_json, datos_nuevos_json)
+    VALUES (auth.uid(), 'UPDATE', TG_TABLE_NAME, NEW.id, to_jsonb(OLD), to_jsonb(NEW));
     RETURN NEW;
   ELSIF TG_OP = 'DELETE' THEN
-    INSERT INTO audit_logs (user_id, accion, entidad, entidad_id, datos_anteriores_json, ip, user_agent)
-    VALUES (auth.uid(), 'DELETE', TG_TABLE_NAME, OLD.id, to_jsonb(OLD), inet_client_addr(), current_setting('request.headers')::json->>'user-agent');
+    INSERT INTO audit_logs (user_id, accion, entidad, entidad_id, datos_anteriores_json)
+    VALUES (auth.uid(), 'DELETE', TG_TABLE_NAME, OLD.id, to_jsonb(OLD));
     RETURN OLD;
   END IF;
   RETURN NULL;
@@ -790,3 +860,4 @@ CREATE TRIGGER audit_certificados AFTER INSERT OR UPDATE OR DELETE ON certificad
 CREATE TRIGGER audit_afiliaciones AFTER INSERT OR UPDATE OR DELETE ON afiliaciones FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
 CREATE TRIGGER audit_paginas_contenido AFTER INSERT OR UPDATE OR DELETE ON paginas_contenido FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
 CREATE TRIGGER audit_usuarios AFTER INSERT OR UPDATE OR DELETE ON profiles FOR EACH ROW EXECUTE FUNCTION audit_trigger_function();
+-- ============================================

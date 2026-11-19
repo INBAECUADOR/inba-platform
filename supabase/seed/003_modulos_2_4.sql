@@ -39,7 +39,7 @@ Los huesos proporcionan soporte y puntos de inserción. Las articulaciones permi
 El entrenador debe conocer la anatomía necesaria para seleccionar ejercicios, comprender movimientos y reconocer cuándo una molestia requiere evaluación profesional.',
       'objetivos', '["Describir componentes del sistema musculoesquelético"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 2) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -53,7 +53,7 @@ El entrenador debe conocer la anatomía necesaria para seleccionar ejercicios, c
 - Deltoides: contribuye a la elevación del brazo en diferentes direcciones.',
       'objetivos', '["Identificar músculos y sus acciones"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 2) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -72,7 +72,7 @@ Brazos:
 - Músculos del antebrazo: intervienen en el agarre y los movimientos de muñeca y dedos.',
       'objetivos', '["Identificar músculos y sus acciones"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 2) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -87,7 +87,7 @@ Brazos:
 Los ejes son líneas imaginarias alrededor de las cuales se produce el movimiento. En términos generales, el movimiento en el plano sagital ocurre alrededor de un eje mediolateral; en el frontal, alrededor de uno anteroposterior; y en el transversal, alrededor de uno longitudinal.',
       'objetivos', '["Identificar planos y ejes", "Relacionar con movimientos"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 2) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -104,7 +104,7 @@ Sus movimientos principales son:
 Estos movimientos son importantes en elevaciones de brazos, remos, empujes y ejercicios por encima de la cabeza. No se debe enseñar que la escápula permanece rígida en todos los ejercicios: su movimiento debe corresponder a la tarea y a la articulación implicada.',
       'objetivos', '["Describir movimientos escapulares", "Aplicar a ejercicios"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 2) AND t.orden = 4;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -118,12 +118,12 @@ Por ejemplo, en un curl de bíceps, los flexores del codo participan en el movim
 Práctica presencial: identificar los grupos musculares involucrados en sentadilla, press de banca, remo, curl de bíceps y elevación lateral.',
       'objetivos', '["Diferenciar roles musculares", "Aplicar a ejercicios básicos"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 2) AND t.orden = 5;
 
   -- Autoevaluación Módulo 2
   INSERT INTO evaluaciones (curso_id, modulo_id, titulo, descripcion, tipo, ponderacion, tiempo_limite_minutos, intentos_permitidos, estado)
-  SELECT id, m.id, 'Autoevaluación Módulo 2: Anatomía', 'Práctica sin calificar', 'cuestionario', 0, 25, 3, 'publicado'
+  SELECT c.id, m.id, 'Autoevaluación Módulo 2: Anatomía', 'Práctica sin calificar', 'cuestionario', 0, 25, 3, 'publicado'
   FROM cursos c JOIN modulos m ON m.curso_id = c.id WHERE c.codigo = 'CERT-ENT-2026' AND m.orden = 2
   RETURNING id INTO v_eval_id;
 

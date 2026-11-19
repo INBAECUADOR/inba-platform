@@ -37,7 +37,7 @@ BEGIN
 La entrevista no sustituye una valoración médica ni autoriza al entrenador a diagnosticar.',
       'objetivos', '["Realizar entrevista completa"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 6) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -55,7 +55,7 @@ Viernes	Cuerpo completo A
 En las semanas siguientes se alternan las sesiones para distribuir el trabajo. Las cargas iniciales deben permitir aprender la técnica y terminar las series con esfuerzo controlado.',
       'objetivos', '["Estructurar planificación completa"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 6) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -67,7 +67,7 @@ En las semanas siguientes se alternan las sesiones para distribuir el trabajo. L
 La progresión no siempre consiste en añadir peso. Puede incluir mejor control, mayor amplitud tolerada o más repeticiones con la misma carga.',
       'objetivos', '["Aplicar progresión sin fallo"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 6) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -83,7 +83,7 @@ Bloques: mesociclos especializados (acumulación → intensificación → realiz
 No todos los atletas necesitan una periodización compleja. El plan debe modificarse según el progreso y la respuesta individual, no únicamente porque cambie la semana del calendario.',
       'objetivos', '["Aplicar periodización y ajustes"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 6) AND t.orden = 4;
 
   -- Autoevaluación Módulo 6

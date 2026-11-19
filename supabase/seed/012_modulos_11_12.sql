@@ -31,7 +31,7 @@ BEGIN
 No debe asumir que todas las federaciones emplean las mismas categorías o los mismos criterios.',
       'objetivos', '["Leer y aplicar reglamento categorías"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 11) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -54,7 +54,7 @@ Expresión facial: confianza, disfrute, control (no sufrimiento).
 Rutina libre: 60-90s, música, coreografía, puntos fuertes.',
       'objetivos', '["Enseñar 7 poses y transiciones"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 11) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -68,7 +68,7 @@ Errores frecuentes y correcciones:
 - Front Lat Spread: elevar hombros (trap sup) → cierra "V". Corrección: "empuja manos afuera y abajo", "omóplatos a bolsillos".',
       'objetivos', '["Enseñar transiciones y corregir errores"]'
     ),
-    'texto', TRUE, 45
+    TRUE, 45
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 11) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -86,7 +86,7 @@ Tasa pérdida: 0.5-1% peso corporal/semana para maximizar retención muscular.
 Hombre natural en escena típico: 5-8% grasa (temporal, no sostenible).',
       'objetivos', '["Planificar preparación completa"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 11) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -108,7 +108,7 @@ Riesgos "broscience" con riesgo real:
 "Testear todo en off-season / mini-cuts; nada nuevo en peak week"',
       'objetivos', '["Gestionar peak week y riesgos"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 11) AND t.orden = 4;
 
   -- Autoevaluación Módulo 11

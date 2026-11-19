@@ -37,7 +37,7 @@ Consecuencias: endocrino (eje HPTA ↓, T3 ↓, cortisol ↑), óseo (densidad �
 Entrenador detecta: fatiga crónica, estancamiento, lesiones recurrentes, irritabilidad, pérdida menstrual (mujeres), libido baja → derivar nutricionista/médico.',
       'objetivos', '["Explicar balance y LEA"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 8) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -53,7 +53,7 @@ Grasas: función celular, absorción vitaminas liposolubles, hormonas. ≥0.8-1 
 Fuentes: variedad animal + vegetal → perfil aminoácidos completo.',
       'objetivos', '["Aplicar recomendaciones macro"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 8) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -73,7 +73,7 @@ Suplementos con evidencia (Grado A/B):
 Mitos creatina: "ciclar", "retención subcutánea" (es intracelular), "solo hombres".',
       'objetivos', '["Aplicar hidratación y sueño", "Identificar suplementos con evidencia"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 8) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -92,7 +92,7 @@ La etiqueta no garantiza que un producto esté libre de contaminantes o sustanci
 Rol del entrenador: identificar problemas obvios (poca energía, poca proteína, poco sueño) y remitir a nutricionista para planes individuales. No sustituye al nutricionista.',
       'objetivos', '["Evaluar suplementos", "Aplicar checklist antidopaje"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 8) AND t.orden = 4;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -111,7 +111,7 @@ Situaciones que requieren derivación obligatoria:
 3. Déficit agresivo competición / peak week / manipulación agua/sodio',
       'objetivos', '["Saber cuándo derivar"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 8) AND t.orden = 5;
 
   -- Autoevaluación Módulo 8

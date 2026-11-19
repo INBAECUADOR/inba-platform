@@ -31,7 +31,7 @@ BEGIN
 La etiqueta no garantiza que un producto esté libre de contaminantes o sustancias no declaradas. "Blend patentado" = no sabes dosis de cada ingrediente.',
       'objetivos', '["Definir suplemento y límites"]'
     ),
-    'texto', TRUE, 45
+    TRUE, 45
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 10) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -48,7 +48,7 @@ La etiqueta no garantiza que un producto esté libre de contaminantes o sustanci
 Creatina monohidrato: 3-5 g/d crónica (carga opcional). Mecanismo: fosfocreatina → resíntesis ATP rápida. Beneficios: fuerza, potencia, hipertrofia, recuperación, cognitivo. Segura en sanos (renal hepática normal). Mitos: "ciclar", "retención subcutánea" (es intracelular), "solo hombres".',
       'objetivos', '["Evaluar suplementos críticamente"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 10) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -62,7 +62,7 @@ La certificación de calidad de un suplemento puede reducir determinados riesgos
 Responsabilidad estricta (strict liability): el atleta es responsable de toda sustancia que entre en su cuerpo, sin necesidad de probar intención o negligencia. Contaminación de suplemento no exime de sanción.',
       'objetivos', '["Conocer normas antidopaje"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 10) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -76,7 +76,7 @@ Si un cliente usa sustancias: no facilitar, no normalizar, explicar riesgos salu
 Si cliente pide "algo para crecer más rápido" sin etiquetas claras: no recomendar productos no verificables, explicar riesgo antidopaje, derivar a federación y profesional de salud.',
       'objetivos', '["Aplicar integridad deportiva"]'
     ),
-    'texto', TRUE, 45
+    TRUE, 45
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 10) AND t.orden = 4;
 
   -- Autoevaluación Módulo 10

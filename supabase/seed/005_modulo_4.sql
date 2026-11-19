@@ -34,7 +34,7 @@ El brazo de momento es la distancia perpendicular entre la línea de acción de 
 En el curl con mancuerna, el torque externo es máximo cuando el antebrazo está horizontal (90° de flexión); al estar casi extendido o muy flexionado, el brazo de momento es pequeño.',
       'objetivos', '["Calcular torque", "Explicar perfil de torque"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 4) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -44,7 +44,7 @@ En el curl con mancuerna, el torque externo es máximo cuando el antebrazo está
       'contenido', 'Sentadilla: evaluar apoyo de los pies, trayectoria, control del tronco, movimiento de rodillas y profundidad tolerada. La técnica exacta depende de las proporciones corporales y del objetivo.',
       'objetivos', '["Enseñar técnica de sentadilla"]'
     ),
-    'texto', TRUE, 30
+    TRUE, 30
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 4) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -54,7 +54,7 @@ En el curl con mancuerna, el torque externo es máximo cuando el antebrazo está
       'contenido', 'Peso muerto rumano: enseñar la bisagra de cadera, mantener la carga próxima al cuerpo y controlar el descenso. La amplitud debe permitir conservar el control y no debe forzarse a costa de la posición.',
       'objetivos', '["Enseñar técnica de PMR"]'
     ),
-    'texto', TRUE, 30
+    TRUE, 30
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 4) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -64,7 +64,7 @@ En el curl con mancuerna, el torque externo es máximo cuando el antebrazo está
       'contenido', 'Press de banca: revisar apoyo de pies, estabilidad, agarre, trayectoria de la barra y control del descenso. El ancho del agarre y la posición del brazo deben adaptarse al atleta.',
       'objetivos', '["Enseñar técnica de press banca"]'
     ),
-    'texto', TRUE, 30
+    TRUE, 30
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 4) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -76,7 +76,7 @@ En el curl con mancuerna, el torque externo es máximo cuando el antebrazo está
 Jalón al pecho: controlar el tronco, evitar tirones y permitir el movimiento escapular. No es necesario llevar la barra detrás de la cabeza para obtener un entrenamiento eficaz.',
       'objetivos', '["Enseñar técnica de remo y jalón"]'
     ),
-    'texto', TRUE, 30
+    TRUE, 30
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 4) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -90,7 +90,7 @@ Según el meta-análisis (PMID 34170576), rangos amplios suelen ser iguales o me
 Se debe diferenciar entre una adaptación técnica intencional y una compensación causada por falta de control, carga excesiva o limitación de movilidad.',
       'objetivos', '["Aplicar ROM según evidencia"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 4) AND t.orden = 3;
 
   -- Autoevaluación Módulo 4

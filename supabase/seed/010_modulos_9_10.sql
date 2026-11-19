@@ -35,7 +35,7 @@ Higiene del sueño: horario fijo, oscuridad, temperatura fresca, sin pantallas 1
 Sueño <6h se asocia a mayor pérdida de masa magra y mayor retención de grasa en déficit (Nedeltcheva et al. 2010).',
       'objetivos', '["Explicar papel del sueño"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 9) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -51,7 +51,7 @@ Estrés crónico → cortisol ↑ → catabolismo, recuperación alterada, sueñ
 Herramienta: diario de carga (entreno + trabajo + estrés percibido 1-10) → ajustar volumen/intensidad semanal.',
       'objetivos', '["Identificar carga total"]'
     ),
-    'texto', TRUE, 45
+    TRUE, 45
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 9) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -67,7 +67,7 @@ Ajustes: reducir volumen 20-30%, subir RIR a 2-3, deload 1 semana, priorizar sue
 Si persisten >2 semanas tras ajustes → derivar médico/fisio/psicólogo.',
       'objetivos', '["Identificar señales y ajustar"]'
     ),
-    'texto', TRUE, 45
+    TRUE, 45
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 9) AND t.orden = 3;
 
   -- Autoevaluación Módulo 9

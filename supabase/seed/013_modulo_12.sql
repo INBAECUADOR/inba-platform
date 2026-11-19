@@ -34,7 +34,7 @@ Feedback efectivo: método sándwich (Positivo específico → Correctivo espec�
 Ejemplo: "Buen agarre y tensión inicial en dorsales. En la subida, tu lumbar se redondea al pasar la rodilla; aprieta ombligo a columna, empuja suelo con pies, lleva pecho arriba antes de extender cadera. El camino de barra está limpio; con ese ajuste la próxima será sólida."',
       'objetivos', '["Comunicar profesionalmente"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 12) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -52,7 +52,7 @@ Sustancias prohibidas: no facilitar, no normalizar, explicar riesgos, no entrena
 Código conducta INBA: antidopaje, trato respetuoso, integridad, confidencialidad, límites competencia, derivaciones, conflicto interés.',
       'objetivos', '["Aplicar ética y límites"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 12) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -69,7 +69,7 @@ Código conducta INBA: antidopaje, trato respetuoso, integridad, confidencialida
 Consentimiento informado debe incluir: descripción programa, riesgos, beneficios, alternativas, confidencialidad, derecho a retirar consentimiento, datos contacto.',
       'objetivos', '["Gestionar servicio profesional"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 12) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -93,7 +93,7 @@ Protocolo derivación: identificar flag → expresar preocupación empática →
 Actividad: resolver caso - atleta pide estrategia extrema perder peso rápido. Respuesta: "Me preocupa tu salud. Esa estrategia implica riesgos (LEA, TCA, rebote). Propongo: diet break 1 sem, subir calorías 300kcal, mantener proteína, reducir cardio. Derivar a nutricionista TCA si persiste. Salud > resultado."',
       'objetivos', '["Compromiso formación continua"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 12) AND t.orden = 4;
 
   -- Práctica supervisada (Módulo 12 incluye práctica)

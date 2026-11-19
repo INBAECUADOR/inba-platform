@@ -1,266 +1,119 @@
-# INBA Ecuador - Setup Guide for Supabase Cloud & Vercel
+# INBA Ecuador — Base de datos y despliegue
 
-## Overview
-This guide walks through configuring the INBA Ecuador platform with Supabase Cloud (PostgreSQL + Auth) and deploying to Vercel.
+Estado verificado el **2026-11-18**.
 
 ---
 
-## 1. Supabase Cloud Setup
+## 1. Archivo único de base de datos
 
-### 1.1 Get Your Credentials
-1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your project: **qknqurlwkobgzgfkbbgq**
-3. Go to **Settings → API**
-4. Copy:
-   - **Project URL**: `https://qknqurlwkobgzgfkbbgq.supabase.co`
-   - **anon public key** (for frontend)
-   - **service_role key** (for backend/admin - keep secret!)
+`supabase/complete_deployment.sql` contiene, en orden y ya validado:
 
-### 1.2 Apply Database Schema
-**Option A: Using Supabase SQL Editor (Recommended)**
-1. Go to **SQL Editor → New Query**
-2. Copy **entire content** of `supabase/migrations/001_schema.sql` (corrected version)
-3. Click **Run**
-4. Verify: Tables appear in **Table Editor**
+1. Esquema completo (34 tablas, 53 índices, 27 triggers, 5 funciones).
+2. Helper de autorización `is_admin()` / `is_staff()` (SECURITY DEFINER).
+3. Políticas RLS (70) para **todas** las tablas con RLS activo.
+4. RPC `verificar_certificado(uuid)` para verificación pública.
+5. Semillas del curso, 12 módulos, 52 lecciones, 12 evaluaciones y CMS.
 
-**Option B: Using psql (if installed)**
+Los archivos `supabase/seed/*.sql` y `supabase/migrations/001_schema.sql` quedaron
+**obsoletos**: contienen errores que ya están corregidos en el archivo único
+(falta `;` en `noticias`, `'texto'` duplicado en `lecciones`, recursión infinita
+en la política de `user_roles`, tema duplicado en el Módulo 5, `docente_id`
+obligatorio sin docente sembrado).
+
+### Aplicar
+
+**Opción A — automática (recomendada)**
+
 ```powershell
-# From project root
-psql "postgresql://postgres:YOUR_DB_PASSWORD@db.qknqurlwkobgzgfkbbgq.supabase.co:5432/postgres?sslmode=require" -f supabase/migrations/001_schema.sql
+$env:SUPABASE_ACCESS_TOKEN = "sbp_..."   # https://supabase.com/dashboard/account/tokens
+node supabase/apply.mjs --create          # crea proyecto si no existe, aplica SQL y configura Vercel
 ```
 
-### 1.3 Apply Seed Data (Course Content)
-Run each seed file **in order** in SQL Editor:
+**Opción B — manual**
 
-| Order | File | Description |
-|-------|------|-------------|
-| 1 | `supabase/seed/002_curso_certificacion.sql` | Main course + Module 1 |
-| 2 | `supabase/seed/003_modulos_2_4.sql` | Modules 2-4 |
-| 3 | `supabase/seed/004_modulos_3_4.sql` | Modules 3-4 |
-| 4 | `supabase/seed/005_modulo_4.sql` | Module 4 detail |
-| 5 | `supabase/seed/006_modulos_5_6.sql` | Modules 5-6 |
-| 6 | `supabase/seed/007_modulos_6_7.sql` | Modules 6-7 |
-| 7 | `supabase/seed/008_modulos_7_8.sql` | Modules 7-8 |
-| 8 | `supabase/seed/009_modulos_8_9.sql` | Modules 8-9 |
-| 9 | `supabase/seed/010_modulos_9_10.sql` | Modules 9-10 |
-| 10 | `supabase/seed/011_modulos_10_11.sql` | Modules 10-11 |
-| 11 | `supabase/seed/012_modulos_11_12.sql` | Modules 11-12 |
-| 12 | `supabase/seed/013_modulo_12.sql` | Module 12 + practice |
-| 13 | `supabase/seed/014_certificados_afiliaciones.sql` | Certs & affiliations |
-| 14 | `supabase/seed/015_cms_part1.sql` | CMS content part 1 |
-| 15 | `supabase/seed/016_cms_part2.sql` | CMS content part 2 |
-| 16 | `supabase/seed/017_cms_part3.sql` | CMS content part 3 |
+Supabase Dashboard → SQL Editor → pegar el contenido completo de
+`supabase/complete_deployment.sql` → Run. Debe terminar sin errores.
 
-**Verification in Table Editor:**
-- `cursos` → 1 row (`CERT-ENT-2026`)
-- `modulos` → 12 rows
-- `lecciones` → 30+ rows
-- `evaluaciones` → 12+ rows
-- `preguntas` → 50+ rows
+### Validación local (sin red)
+
+```powershell
+node scripts/validate-sql.mjs      # ejecuta el SQL en PostgreSQL (WASM)
+node scripts/test-rls.mjs          # 17 pruebas de aislamiento por rol
+```
 
 ---
 
-## 2. Create Test Users
+## 2. Roles y usuarios
 
-### 2.1 Create in Supabase Auth
-Go to **Authentication → Users → Add user** (create both):
+Roles sembrados: `admin_general`, `admin_academico`, `docente`, `estudiante`, `afiliado`.
 
-| Email | Password | Role |
-|-------|----------|------|
-| `admin@inbaecuador.org` | `Admin123!` | Admin |
-| `estudiante@test.com` | `Estudiante123!` | Student |
-
-Enable **Email confirmation** for both.
-
-### 2.2 Assign Roles & Profiles
-Run in **SQL Editor** after creating users:
+Después de crear los usuarios en **Authentication → Users**, asignar roles:
 
 ```sql
--- Get user IDs first:
-SELECT id, email FROM auth.users WHERE email IN ('admin@inbaecuador.org', 'estudiante@test.com');
-
--- Then run with actual UUIDs:
--- Admin role
-INSERT INTO user_roles (user_id, role_id)
-SELECT u.id, r.id FROM auth.users u, roles r
-WHERE u.email = 'admin@inbaecuador.org' AND r.name = 'admin_general';
-
+-- ADMIN
 INSERT INTO profiles (id, email, full_name)
 SELECT id, email, 'Administrador INBA' FROM auth.users WHERE email = 'admin@inbaecuador.org'
 ON CONFLICT (id) DO NOTHING;
 
--- Student role
 INSERT INTO user_roles (user_id, role_id)
 SELECT u.id, r.id FROM auth.users u, roles r
-WHERE u.email = 'estudiante@test.com' AND r.name = 'estudiante';
+WHERE u.email = 'admin@inbaecuador.org' AND r.name = 'admin_general'
+ON CONFLICT DO NOTHING;
 
+-- ESTUDIANTE
 INSERT INTO profiles (id, email, full_name)
 SELECT id, email, 'Estudiante Demo' FROM auth.users WHERE email = 'estudiante@test.com'
 ON CONFLICT (id) DO NOTHING;
 
--- Enroll student in course
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id FROM auth.users u, roles r
+WHERE u.email = 'estudiante@test.com' AND r.name = 'estudiante'
+ON CONFLICT DO NOTHING;
+
 INSERT INTO matriculas (user_id, curso_id, estado, fecha_inicio)
-SELECT 
-    (SELECT id FROM auth.users WHERE email = 'estudiante@test.com'),
-    (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026'),
-    'activa', CURRENT_DATE;
+SELECT u.id, c.id, 'activa', CURRENT_DATE
+FROM auth.users u, cursos c
+WHERE u.email = 'estudiante@test.com' AND c.codigo = 'CERT-ENT-2026'
+ON CONFLICT DO NOTHING;
 ```
 
-**Verify in Table Editor:**
-- `profiles` → 2 rows
-- `user_roles` → 2 rows (admin_general, estudiante)
-- `matriculas` → 1 row (student enrolled in CERT-ENT-2026)
+> No usar contraseñas de ejemplo en producción. Generar contraseñas aleatorias
+> y entregarlas por canal privado.
 
 ---
 
-## 3. Configure Vercel Environment Variables
+## 3. Variables de entorno
 
-Go to **Vercel Dashboard → Project → Settings → Environment Variables**
+| Variable | Dónde | Visible en cliente |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Vercel + `.env.local` | Sí |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + `.env.local` | Sí (publishable) |
+| `SUPABASE_SERVICE_ROLE_KEY` | **solo Vercel (servidor)** | **No** |
+| `NEXT_PUBLIC_APP_URL` | Vercel | Sí |
 
-| Variable | Value | Environment |
-|----------|-------|-------------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://qknqurlwkobgzgfkbbgq.supabase.co` | All |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (your anon key) | All |
-| `SUPABASE_SERVICE_ROLE_KEY` | (your service_role key) | All |
-| `NEXT_PUBLIC_APP_URL` | `https://inba-platform.vercel.app` | Production |
-| `NEXT_PUBLIC_APP_NAME` | `INBA Ecuador` | All |
-| `RESEND_API_KEY` | `re_your_key` | Production |
-| `EMAIL_FROM` | `INBA Ecuador <noreply@inbaecuador.org>` | All |
-| `QR_CODE_BASE_URL` | `https://inba-platform.vercel.app/verificar-certificado` | Production |
-| `NODE_ENV` | `production` | Production |
+`SUPABASE_SERVICE_ROLE_KEY` nunca debe llevar prefijo `NEXT_PUBLIC_`.
 
-**Important:** Fix `SUPABASE_SERVICE_ROLE_KEY` which shows "Needs Attention"
+---
 
-### Redeploy
-```bash
-git commit --allow-empty -m "chore: trigger deploy with Cloud config" && git push
+## 4. Verificación
+
+```powershell
+curl https://inba-platform.vercel.app/api/health
 ```
 
----
+Respuesta esperada:
 
-## 4. Test Production
-
-### 4.1 Login Test
-Visit: **https://inba-platform.vercel.app/login**
-
-| User | Email | Password | Expected Panel |
-|------|-------|----------|----------------|
-| Admin | `admin@inbaecuador.org` | `Admin123!` | `/app/admin` |
-| Student | `estudiante@test.com` | `Estudiante123!` | `/app/estudiante/cursos` |
-
-### 4.2 Verify Functionality
-
-**Admin Panel (`/app/admin`):**
-- [ ] Stats cards load
-- [ ] Recent users table shows test users
-- [ ] Recent courses shows certification course
-- [ ] Quick actions navigate correctly
-
-**Student Panel (`/app/estudiante/cursos`):**
-- [ ] Shows "Certificación de Entrenadores..." course
-- [ ] Course card shows progress, modules, actions
-- [ ] Can click "Continuar" → navigate to course detail
-- [ ] `/app/estudiante/evaluaciones` shows autoevaluaciones
-
-**Course Detail (`/app/estudiante/cursos/[id]`):**
-- [ ] Modules list with lessons
-- [ ] Can open lessons, mark complete
-- [ ] Progress updates
-
-**Evaluations (`/app/estudiante/evaluaciones`):**
-- [ ] Tabs: Disponibles, Por calificar, Aprobadas
-- [ ] Can start autoevaluación
-- [ ] Questions render correctly
-- [ ] Submit saves attempt
-- [ ] Results show after submit
-
-**Certificates (`/app/estudiante/certificados`):**
-- [ ] Shows after passing all requirements
-
----
-
-## 5. Local Development
-
-### 5.1 Local .env.local
-```bash
-cp .env.production.example .env.local
-# Fill in your Cloud credentials
+```json
+{ "ok": true, "supabase_host": "<ref>.supabase.co", "cursos": 1, "roles": ["admin_general", "..."] }
 ```
 
-### 5.2 Run Locally
-```bash
-npm install
-npm run dev
-# Opens http://localhost:3000
-```
+`ok: false` indica exactamente qué falla (`missing_env`, `db_error`, `unreachable`).
 
-### 5.3 Run Tests
-```bash
-npm run type-check  # TypeScript
-npm run build       # Production build
-npm test            # Unit tests (if configured)
-```
+Rutas a comprobar:
 
----
-
-## 6. Troubleshooting
-
-### "No modules showing"
-- Seeds not applied → Run all 16 seed files in order
-- Student not enrolled → Check `matriculas` table
-- Wrong user role → Check `user_roles` table
-
-### "Authentication failed"
-- Check `NEXT_PUBLIC_SUPABASE_URL` and `ANON_KEY` match Supabase
-- Check Vercel Environment Variables are set for correct environment
-- Clear browser cache / try incognito
-
-### "Build fails on Vercel"
-- Check `SUPABASE_SERVICE_ROLE_KEY` is set (shows "Needs Attention" if not)
-- Run `npm run build` locally first
-- Check Vercel build logs for specific errors
-
-### "Database connection failed"
-- Verify `NEXT_PUBLIC_SUPABASE_URL` uses `https://qknqurlwkobgzgfkbbgq.supabase.co`
-- Check Supabase project is not paused (free tier pauses after 1 week inactivity)
-- Go to Supabase Dashboard → Settings → General → "Resume project" if needed
-
----
-
-## 7. File Reference
-
-| File | Purpose |
-|------|---------|
-| `supabase/migrations/001_schema.sql` | Complete DB schema (corrected) |
-| `supabase/seed/002-017*.sql` | Course content seeds |
-| `supabase/seed.sql` | Combined seed file (for psql) |
-| `setup-cloud.ps1` | Automated setup script |
-| `.env.production.example` | Production env template |
-| `.env.local` | Local development (gitignored) |
-
----
-
-## 8. Security Checklist
-
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` only in Vercel (not in repo)
-- [ ] No `.env.local` committed to Git
-- [ ] RLS policies enabled on all tables
-- [ ] Auth email confirmations enabled
-- [ ] Password requirements configured (min 8 chars)
-- [ ] HTTPS enforced on Vercel (automatic)
-- [ ] No hardcoded secrets in code
-
----
-
-## 9. Support
-
-If issues persist:
-1. Check Vercel build logs
-- Check Supabase logs (Dashboard → Logs)
-3. Run locally with `npm run dev` and check browser console
-4. Verify all SQL executed successfully in Supabase SQL Editor
-
-**Project URLs:**
-- Production: https://inba-platform.vercel.app
-- Supabase Dashboard: https://supabase.com/dashboard/project/qknqurlwkobgzgfkbbgq
-- Vercel Dashboard: https://vercel.com/inbaecuador/inba-platform
+- `/login` → inicio de sesión.
+- `/app/admin` → solo `admin_general` (si no, muestra “Acceso denegado”).
+- `/app/estudiante` → panel del estudiante.
+- `/app/estudiante/cursos` → curso matriculado y 12 módulos.
+- `/app/estudiante/evaluaciones` → evaluaciones publicadas.
+- `/verificar-certificado/<uuid>` → verificación pública por RPC.

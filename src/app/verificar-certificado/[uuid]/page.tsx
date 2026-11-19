@@ -26,34 +26,25 @@ interface PageProps {
 
 async function getCertificate(uuid: string): Promise<CertificateData | null> {
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('certificados')
-    .select(`
-      id,
-      numero_serie,
-      fecha_emision,
-      estado,
-      cursos!inner(nombre),
-      user_id,
-      profiles!inner(full_name, dni),
-      autoridad_nombre,
-      autoridad_cargo
-    `)
-    .eq('uuid_publico', uuid)
-    .single()
 
-  if (error || !data) return null
+  // La verificacion publica usa una funcion SECURITY DEFINER que devuelve
+  // solo los campos necesarios. La tabla `certificados` no es legible por
+  // anonimos ni por otros estudiantes (RLS).
+  const { data, error } = await supabase.rpc('verificar_certificado', { p_uuid: uuid })
+
+  const row = Array.isArray(data) ? data[0] : data
+  if (error || !row) return null
 
   return {
-    id: data.id,
-    numero_serie: data.numero_serie,
-    fecha_emision: data.fecha_emision,
-    estado: data.estado,
-    curso_nombre: data.cursos?.[0]?.nombre || '',
-    autoridad_nombre: data.autoridad_nombre,
-    autoridad_cargo: data.autoridad_cargo,
-    user_nombre: data.profiles?.[0]?.full_name || '',
-    user_dni: data.profiles?.[0]?.dni || '',
+    id: uuid,
+    numero_serie: row.numero_serie,
+    fecha_emision: row.fecha_emision,
+    estado: row.estado,
+    curso_nombre: row.curso_nombre || '',
+    autoridad_nombre: row.autoridad_nombre,
+    autoridad_cargo: row.autoridad_cargo,
+    user_nombre: row.alumno_nombre || '',
+    user_dni: row.alumno_dni || '',
   }
 }
 

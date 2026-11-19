@@ -36,7 +36,7 @@ La interacción de estas proteínas, utilizando energía procedente del ATP, pro
 Una unidad motora es una neurona y las fibras que inerva; más unidades reclutadas, más fuerza.',
       'objetivos', '["Describir secuencia de contracción"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 3) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -51,7 +51,7 @@ Una unidad motora es una neurona y las fibras que inerva; más unidades reclutad
 Los tres sistemas actúan simultáneamente, aunque su contribución cambia según la intensidad, la duración y el descanso.',
       'objetivos', '["Explicar predominio según intensidad/duración"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 3) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -71,7 +71,7 @@ Hormonas: los picos agudos tras entrenar no predicen por sí solos la hipertrofi
 Fatiga y recuperación: el entrenamiento genera fatiga; la adaptación ocurre con descanso adecuado.',
       'objetivos', '["Explicar mecanotransducción y mTORC1"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 3) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -85,7 +85,7 @@ Las agujetas no son un requisito para crecer. Entrenar al fallo tampoco es oblig
 Fatiga periférica = fallos distal a la placa motora (acumulación Pi, H⁺, ADP, depleción Ca²⁺). Fatiga central = reducción de la salida neural (frecuencia disparo, reclutamiento UMs altas).',
       'objetivos', '["Diferenciar fatiga y recuperación"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 3) AND t.orden = 4;
 
   -- Autoevaluación Módulo 3

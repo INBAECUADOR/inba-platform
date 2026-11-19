@@ -5,6 +5,8 @@
 DO $$
 DECLARE
   v_curso_id UUID;
+  v_modulo_id UUID;
+  v_eval_id UUID;
 BEGIN
   SELECT id INTO v_curso_id FROM cursos WHERE codigo = 'CERT-ENT-2026';
 

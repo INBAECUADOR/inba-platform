@@ -37,7 +37,7 @@ DEXA = gold standard. Pliegues ISA K = barato, buen seguimiento si evaluador est
 Protocolo fotos: misma hora, luz, fondo, distancia, poses fijas (frente, lateral, espalda, abdominales).',
       'objetivos', '["Realizar evaluación inicial completa"]'
     ),
-    'texto', TRUE, 90
+    TRUE, 90
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 7) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -55,7 +55,7 @@ Tests fuerza: 1RM directo (riesgo) vs tests submáximos (5-10 RM) + ecuaciones p
 Test 1RM NO obligatorio en primera sesión de principiante.',
       'objetivos', '["Seleccionar y aplicar tests"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 7) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -80,7 +80,7 @@ Banderas rojas (derivación médica):
 El entrenador no debe atribuir automáticamente estos síntomas a falta de disciplina.',
       'objetivos', '["Implementar seguimiento", "Identificar banderas rojas"]'
     ),
-    'texto', TRUE, 45
+    TRUE, 45
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 7) AND t.orden = 3;
 
   -- Autoevaluación Módulo 7

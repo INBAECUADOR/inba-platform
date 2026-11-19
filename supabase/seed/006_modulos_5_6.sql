@@ -22,9 +22,9 @@ BEGIN
   INSERT INTO temas (modulo_id, orden, titulo, descripcion, objetivos, duracion_minutos) VALUES
   (v_modulo_id, 1, 'Carga y repeticiones', 'Evidencia: 5-30 reps efectivas si esfuerzo suficiente. Cargas altas para fuerza máxima.', '["Seleccionar rango reps según objetivo"]', 60),
   (v_modulo_id, 2, 'Series y volumen', 'Schoenfeld 2017: 10-20 series/sem/grupo. Rendimientos decrecientes, respuesta individual.', '["Aplicar volumen con rendimientos decrecientes"]', 60),
-  (v_modulo_id, 2, 'Proximidad al fallo (RIR)', 'Refalo 2023: RIR 1-3 = RIR 0. No obligatorio fallo. Menos fatiga sistémica.', '["Usar RIR para controlar esfuerzo"]', 60),
-  (v_modulo_id, 3, 'Descanso y frecuencia', 'Descanso según ejercicio. Frecuencia 2x/sem mín. Distribución volumen.', '["Programar descanso y frecuencia"]', 60),
-  (v_modulo_id, 4, 'Progresión y periodización', 'Progresión: carga/reps/RIR. Lineal, ondulada, bloques. Ajuste 1 variable.', '["Diseñar progresión y periodización"]', 90);
+  (v_modulo_id, 3, 'Proximidad al fallo (RIR)', 'Refalo 2023: RIR 1-3 = RIR 0. No obligatorio fallo. Menos fatiga sistémica.', '["Usar RIR para controlar esfuerzo"]', 60),
+  (v_modulo_id, 4, 'Descanso y frecuencia', 'Descanso según ejercicio. Frecuencia 2x/sem mín. Distribución volumen.', '["Programar descanso y frecuencia"]', 60),
+  (v_modulo_id, 5, 'Progresión y periodización', 'Progresión: carga/reps/RIR. Lineal, ondulada, bloques. Ajuste 1 variable.', '["Diseñar progresión y periodización"]', 90);
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
   SELECT t.id, 1, 'Carga y repeticiones: evidencia',
@@ -35,7 +35,7 @@ BEGIN
 El rango de repeticiones debe elegirse según el objetivo, el ejercicio, la experiencia y la tolerancia del atleta. Rangos de 5-30 repeticiones pueden ser efectivos si el esfuerzo es suficiente.',
       'objetivos', '["Seleccionar rango reps según objetivo"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 1;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -53,7 +53,7 @@ Respuesta individual: algunos crecen con 10 series, otros necesitan 20; genétic
 Implicación: empezar conservador (10-12), subir si progresa y recupera; no copiar "20 series" ciegamente.',
       'objetivos', '["Aplicar volumen con rendimientos decrecientes"]'
     ),
-    'texto', TRUE, 60
+    TRUE, 60
   FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 2;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
@@ -69,8 +69,8 @@ Fallo (RIR 0) puede usarse puntualmente (última serie, ejercicios seguros, meso
 En naturales, recuperación es limitante → evitar fallo crónico permite más volumen efectivo/semana.',
       'objetivos', '["Usar RIR para controlar esfuerzo"]'
     ),
-    'texto', TRUE, 60
-  FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 2;
+    TRUE, 60
+  FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 3;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
   SELECT t.id, 1, 'Descanso, frecuencia y progresión',
@@ -85,8 +85,8 @@ La progresión no siempre consiste en añadir peso. Puede incluir mejor control,
 Regla: solo sube carga si completas series objetivo con RIR objetivo; una variable por semana.',
       'objetivos', '["Programar descanso y frecuencia"]'
     ),
-    'texto', TRUE, 60
-  FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 3;
+    TRUE, 60
+  FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 4;
 
   INSERT INTO lecciones (tema_id, orden, titulo, descripcion, tipo, contenido_json, es_obligatoria, duracion_minutos)
   SELECT t.id, 1, 'Periodización y caso práctico estancamiento',
@@ -102,8 +102,8 @@ Diagnóstico: 1) Registro progresión real 2) Sueño/estrés/energía 3) Proteí
 Error: cambiar todas las variables a la vez impide saber qué funcionó.',
       'objetivos', '["Diseñar progresión y periodización"]'
     ),
-    'texto', TRUE, 90
-  FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 4;
+    TRUE, 90
+  FROM temas t WHERE t.modulo_id = (SELECT id FROM modulos WHERE curso_id = (SELECT id FROM cursos WHERE codigo = 'CERT-ENT-2026') AND orden = 5) AND t.orden = 5;
 
   -- Autoevaluación Módulo 5
   INSERT INTO evaluaciones (curso_id, modulo_id, titulo, descripcion, tipo, ponderacion, tiempo_limite_minutos, intentos_permitidos, estado)
