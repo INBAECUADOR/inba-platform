@@ -32,6 +32,8 @@ if (!TOKEN || !TOKEN.startsWith('sbp_')) {
 const projectName = process.env.INBA_PROJECT_NAME ?? 'inba-ecuador'
 const region = process.env.INBA_REGION ?? 'us-east-1'
 const createIfMissing = process.argv.includes('--create')
+// --new fuerza la creacion de un proyecto limpio aunque ya existan otros.
+const forceNew = process.argv.includes('--new')
 
 async function api(path, init = {}) {
   const res = await fetch(`${API}${path}`, {
@@ -54,14 +56,38 @@ async function api(path, init = {}) {
 
 const log = (...a) => console.log(...a)
 
+/**
+ * Un proyecto pausado (INACTIVE) no responde por DNS ni acepta consultas.
+ * Esperamos a que Supabase lo levante antes de tocar la base.
+ */
+async function waitForHealthy(project) {
+  if (project.status === 'ACTIVE_HEALTHY') return project
+
+  log(`  Esperando a que el proyecto este ACTIVE_HEALTHY (ahora: ${project.status})...`)
+  let last = project
+  for (let i = 0; i < 90; i++) {
+    await new Promise((r) => setTimeout(r, 5000))
+    last = await api(`/projects/${project.id}`)
+    if (last.status === 'ACTIVE_HEALTHY') {
+      log('  Proyecto activo.')
+      return last
+    }
+    process.stdout.write('.')
+  }
+  throw new Error(
+    `El proyecto ${project.id} no llego a ACTIVE_HEALTHY (estado: ${last.status}). ` +
+      'Restauraciones pausadas pueden tardar varios minutos: vuelve a ejecutar el script.'
+  )
+}
+
 // 1. Proyectos existentes
 log('→ Consultando proyectos de la cuenta...')
 const projects = await api('/projects')
 if (!Array.isArray(projects)) throw new Error('Respuesta inesperada de /projects')
 
-let project = projects.find((p) => p.name === projectName) ?? projects[0]
+let project = forceNew ? null : (projects.find((p) => p.name === projectName) ?? projects[0])
 
-if (!project && createIfMissing) {
+if (forceNew || (!project && createIfMissing)) {
   log('→ No hay proyectos. Creando uno nuevo (plan free)...')
   const orgs = await api('/organizations')
   if (!orgs?.length) throw new Error('La cuenta no tiene organizaciones.')
@@ -77,16 +103,17 @@ if (!project && createIfMissing) {
     }),
   })
   log(`  Proyecto creado: ${project.id} (${project.name})`)
-  log(`  IMPORTANTE: guarda la contrasena de la base de datos en un gestor seguro.`)
-  log(`  db_pass generada: ${dbPass}`)
-  log('  Esperando a que el proyecto este ACTIVE_HEALTHY...')
-  for (let i = 0; i < 60; i++) {
-    await new Promise((r) => setTimeout(r, 5000))
-    const st = await api(`/projects/${project.id}`)
-    if (st.status === 'ACTIVE_HEALTHY') { project = st; break }
-    process.stdout.write('.')
+  // La contrasena de la base no es necesaria para el flujo (se usa la API de
+  // gestion y la anon key) y no debe quedar en la salida. Se puede guardar en
+  // un archivo fuera del repo pasando INBA_DB_PASS_FILE.
+  if (process.env.INBA_DB_PASS_FILE) {
+    const { writeFile } = await import('node:fs/promises')
+    await writeFile(process.env.INBA_DB_PASS_FILE, dbPass, 'utf8')
+    log(`  db_pass guardada en ${process.env.INBA_DB_PASS_FILE}`)
+  } else {
+    log('  db_pass generada y NO mostrada (usa el dashboard si necesitas resetearla).')
   }
-  log('')
+  project = await waitForHealthy(project)
 }
 
 if (!project) {
@@ -96,6 +123,7 @@ if (!project) {
 
 const ref = project.id
 log(`→ Proyecto: ${project.name} (${ref}) estado=${project.status}`)
+project = await waitForHealthy(project)
 
 // 2. Aplicar el SQL
 log('→ Aplicando supabase/complete_deployment.sql ...')
@@ -115,8 +143,14 @@ try {
 // 3. Claves
 log('→ Obteniendo claves del proyecto...')
 const keys = await api(`/projects/${ref}/api-keys?reveal=true`)
-const publishable = keys.find((k) => k.type === 'publishable' || k.name === 'anon')?.api_key
-const secret = keys.find((k) => k.type === 'secret' || k.name === 'service_role')?.api_key
+// Preferimos las claves JWT legacy (anon / service_role): supabase-js 2.39
+// y @supabase/ssr 0.1 no soportan las nuevas sb_publishable_/sb_secret_.
+const publishable =
+  keys.find((k) => k.name === 'anon')?.api_key ??
+  keys.find((k) => k.type === 'publishable')?.api_key
+const secret =
+  keys.find((k) => k.name === 'service_role')?.api_key ??
+  keys.find((k) => k.type === 'secret')?.api_key
 if (!publishable || !secret) throw new Error('No se pudieron leer las claves del proyecto.')
 
 const url = `https://${ref}.supabase.co`
@@ -137,7 +171,7 @@ log('→ Configurando variables de entorno en Vercel...')
 for (const [name, value] of Object.entries(envVars)) {
   for (const env of ['production', 'preview', 'development']) {
     spawnSync('npx', ['vercel', 'env', 'rm', name, env, '--yes'], { stdio: 'ignore', shell: true })
-    const r = spawnSync('npx', ['vercel', 'env', 'add', name, env], {
+    const r = spawnSync('npx', ['vercel', 'env', 'add', name, env, '--type', 'config', '--force', '--yes'], {
       input: value,
       encoding: 'utf8',
       shell: true,
