@@ -33,6 +33,20 @@ export const ROLE_DESCRIPTIONS: Record<UserRole, string> = {
   public: 'Acceso público sin autenticación',
 }
 
+/**
+ * Supabase devuelve las relaciones embebidas como objeto cuando la relacion es
+ * muchos-a-uno (`user_roles -> roles`) y como arreglo cuando es uno-a-muchos.
+ * Normalizamos ambos casos para no perder los roles del usuario.
+ */
+export function extractRoleName(value: unknown): UserRole | null {
+  const row = Array.isArray(value) ? value[0] : value
+  if (row && typeof row === 'object' && 'name' in row) {
+    const name = (row as { name?: unknown }).name
+    if (typeof name === 'string' && name.length > 0) return name as UserRole
+  }
+  return null
+}
+
 export function hasRole(userRoles: UserRole[], requiredRole: UserRole): boolean {
   const userMaxLevel = Math.max(...userRoles.map(r => ROLE_HIERARCHY[r]))
   return userMaxLevel >= ROLE_HIERARCHY[requiredRole]

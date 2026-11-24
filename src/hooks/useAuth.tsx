@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User, Session } from '@supabase/supabase-js'
-import { UserRole } from '@/lib/auth/roles'
+import { extractRoleName, UserRole } from '@/lib/auth/roles'
 
 interface AuthContextType {
   user: User | null
@@ -48,7 +48,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('role_id, roles(name)')
       .eq('user_id', userId)
 
-    const roles = (rolesData?.map(r => r.roles?.[0]?.name).filter(Boolean) as UserRole[]) || []
+    const roles = (rolesData ?? [])
+      .map(r => extractRoleName((r as { roles?: unknown }).roles))
+      .filter((role): role is UserRole => role !== null)
 
     if (data) {
       setProfile({
