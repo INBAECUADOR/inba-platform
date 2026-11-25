@@ -39,19 +39,9 @@ const navigation = {
     { label: 'Dashboard', href: '/app/admin', icon: LayoutDashboard },
     { label: 'Usuarios', href: '/app/admin/usuarios', icon: Users },
     { label: 'Cursos', href: '/app/admin/cursos', icon: GraduationCap },
-    { label: 'Evaluaciones', href: '/app/admin/evaluaciones', icon: ClipboardCheck },
-    { label: 'Certificados', href: '/app/admin/certificados', icon: Award },
-    { label: 'Afiliaciones', href: '/app/admin/afiliaciones', icon: Users },
-    { label: 'Pagos', href: '/app/admin/pagos', icon: CreditCard },
-    { label: 'Configuración', href: '/app/admin/configuracion', icon: Settings },
   ],
   docente: [
     { label: 'Panel Docente', href: '/app/docente', icon: LayoutDashboard },
-    { label: 'Mis Cursos', href: '/app/docente/cursos', icon: GraduationCap },
-    { label: 'Evaluaciones', href: '/app/docente/evaluaciones', icon: ClipboardCheck },
-    { label: 'Calificar', href: '/app/docente/calificar', icon: Award },
-    { label: 'Prácticas', href: '/app/docente/practicas', icon: BookOpen },
-    { label: 'Alumnos', href: '/app/docente/alumnos', icon: Users },
   ],
   estudiante: [
     { label: 'Mi Academia', href: '/app/estudiante', icon: Home },
@@ -63,14 +53,11 @@ const navigation = {
     { label: 'Certificados', href: '/app/estudiante/certificados', icon: Trophy },
   ],
   afiliado: [
-    { label: 'Mi Perfil', href: '/app/afiliado', icon: User },
-    { label: 'Renovación', href: '/app/afiliado/renovacion', icon: CreditCard },
-    { label: 'Eventos', href: '/app/afiliado/eventos', icon: Calendar },
-    { label: 'Pagos', href: '/app/afiliado/pagos', icon: CreditCard },
-    { label: 'Certificados', href: '/app/afiliado/certificados', icon: Award },
-    { label: 'Directorio', href: '/app/afiliado/directorio', icon: Users },
+    { label: 'Mi Panel', href: '/app/afiliado', icon: User },
   ],
 }
+
+type MenuKey = keyof typeof navigation
 
 export function AppSidebar() {
   const { profile, signOut } = useAuth()
@@ -79,7 +66,11 @@ export function AppSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   const highestRole = getHighestRole(profile?.roles ?? []) ?? 'estudiante'
-  const navItems = navigation[highestRole as keyof typeof navigation] || navigation.estudiante
+  // Las claves del menu usan "admin", pero el rol se llama admin_general /
+  // admin_academico: sin este mapeo el admin veia el menu de estudiante.
+  const menuKey: MenuKey =
+    highestRole === 'admin_general' || highestRole === 'admin_academico' ? 'admin' : (highestRole as MenuKey)
+  const navItems = navigation[menuKey] ?? navigation.estudiante
 
   const toggleSidebar = () => setCollapsed(!collapsed)
 
@@ -160,13 +151,6 @@ export function AppSidebar() {
               >
                 <User className="h-5 w-5" />
                 <span>Mi perfil</span>
-              </Link>
-              <Link
-                href="/app/configuracion"
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all"
-              >
-                <Settings className="h-5 w-5" />
-                <span>Configuración</span>
               </Link>
             </div>
           )}
