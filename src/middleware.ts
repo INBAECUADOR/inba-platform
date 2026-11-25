@@ -31,10 +31,11 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Refresh session if expired
+  // Valida el token contra el servidor de auth: getSession() solo decodifica
+  // la cookie, asi que una cookie caducada provocaba bucles login <-> /app.
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser()
 
   // Protected routes that require authentication
   const protectedPaths = ['/app']
@@ -46,12 +47,12 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = authPaths.some(path => pathname.startsWith(path))
 
   // Redirect authenticated users away from auth pages
-  if (session && isAuthPath) {
+  if (user && isAuthPath) {
     return NextResponse.redirect(new URL('/app', request.url))
   }
 
   // Redirect unauthenticated users to login
-  if (!session && isProtectedPath) {
+  if (!user && isProtectedPath) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirect', pathname)
