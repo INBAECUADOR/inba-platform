@@ -113,11 +113,14 @@ BEGIN
         'enunciado', q.enunciado,
         'tipo', q.tipo,
         'puntaje', q.puntaje,
-        'opciones', COALESCE((
-          SELECT jsonb_agg(jsonb_build_object('id', o.id, 'texto', o.texto) ORDER BY o.orden)
-          FROM opciones_respuesta o
-          WHERE o.pregunta_id = q.id
-        ), '[]'::jsonb)
+        'opciones', CASE
+          WHEN q.tipo IN ('opcion_multiple', 'verdadero_falso') THEN COALESCE((
+            SELECT jsonb_agg(jsonb_build_object('id', o.id, 'texto', o.texto) ORDER BY o.orden)
+            FROM opciones_respuesta o
+            WHERE o.pregunta_id = q.id
+          ), '[]'::jsonb)
+          ELSE '[]'::jsonb
+        END
       ) AS pregunta_json
       FROM preguntas q
       JOIN intentos_evaluacion i ON i.evaluacion_id = q.evaluacion_id

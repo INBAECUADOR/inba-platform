@@ -30,6 +30,14 @@ interface Evaluacion {
   intentos_permitidos: number
 }
 
+// Las respuestas abiertas guardan la respuesta esperada como opcion para la
+// calificacion por conceptos, pero nunca deben mostrarse como alternativas.
+function mostrarOpciones(pregunta: Pregunta) {
+  return (
+    (pregunta.tipo === 'opcion_multiple' || pregunta.tipo === 'verdadero_falso') && pregunta.opciones.length > 0
+  )
+}
+
 export default function IniciarEvaluacionPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [evaluacion, setEvaluacion] = useState<Evaluacion | null>(null)
@@ -179,7 +187,7 @@ export default function IniciarEvaluacionPage({ params }: { params: { id: string
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Las preguntas abiertas quedan pendientes de revisión docente. Puedes enviar el intento una sola vez.
+          Las respuestas abiertas se evalúan automáticamente por conceptos clave. Puedes enviar el intento una sola vez.
         </p>
       </header>
 
@@ -193,7 +201,7 @@ export default function IniciarEvaluacionPage({ params }: { params: { id: string
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {pregunta.opciones.length > 0 ? (
+              {mostrarOpciones(pregunta) ? (
                 <div className="space-y-2">
                   {pregunta.opciones.map((opcion) => (
                     <label
@@ -227,7 +235,7 @@ export default function IniciarEvaluacionPage({ params }: { params: { id: string
                   />
                   {pregunta.tipo !== 'respuesta_corta' && (
                     <p className="text-xs text-muted-foreground">
-                      Esta pregunta aún no tiene opciones configuradas; tu respuesta escrita será revisada manualmente.
+                      Esta pregunta se responde por escrito y será revisada por el docente.
                     </p>
                   )}
                 </div>
