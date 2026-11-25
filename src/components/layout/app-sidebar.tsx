@@ -1,6 +1,7 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
+import { getHighestRole, ROLE_LABELS } from '@/lib/auth/roles'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/utils/cn'
@@ -77,7 +78,7 @@ export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const highestRole = profile?.roles?.[0] || 'estudiante'
+  const highestRole = getHighestRole(profile?.roles ?? []) ?? 'estudiante'
   const navItems = navigation[highestRole as keyof typeof navigation] || navigation.estudiante
 
   const toggleSidebar = () => setCollapsed(!collapsed)
@@ -180,7 +181,7 @@ export function AppSidebar() {
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{profile?.full_name || 'Usuario'}</p>
-                <p className="text-xs text-muted-foreground capitalize truncate">{highestRole.replace('_', ' ')}</p>
+                <p className="text-xs text-muted-foreground truncate">{ROLE_LABELS[highestRole] ?? highestRole}</p>
               </div>
             )}
           </div>
