@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/hooks/useAuth'
-import { hasRole } from '@/lib/auth/roles'
+import { hasAnyRole } from '@/lib/auth/roles'
 import { Users, GraduationCap, ClipboardCheck, Award, BookOpen, TrendingUp, Calendar, Loader2, Shield, CreditCard, Bell, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -59,7 +59,7 @@ export default function AdminPage() {
     )
   }
 
-  if (!hasRole(profile?.roles || [], 'admin_general')) {
+  if (!hasAnyRole(profile?.roles || [], ['admin_general', 'admin_academico'])) {
     return (
       <div className="container-inba py-16 text-center">
         <h1 className="text-2xl font-bold text-foreground mb-2">Acceso denegado</h1>
