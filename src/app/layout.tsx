@@ -4,8 +4,6 @@ import { Footer } from '@/components/layout/footer'
 import { Providers } from '@/components/providers'
 import { ReactNode } from 'react'
 
-export const dynamic = 'force-static'
-
 export default function RootLayout({
   children,
 }: {
