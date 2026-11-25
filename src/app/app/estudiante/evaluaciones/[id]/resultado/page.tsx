@@ -17,14 +17,20 @@ interface IntentoRow {
   nota_final: number | null
 }
 
-interface RespuestaRow {
-  id: string
-  respuesta_json: { valor?: string | null } | null
-  puntaje_obtenido: number | null
-  preguntas: { enunciado: string; explicacion: string | null } | { enunciado: string; explicacion: string | null }[] | null
+interface DetalleRespuesta {
+  pregunta: string
+  tipo: string
+  puntaje: number
+  obtenido: number | null
+  respuesta: string | null
+  esperada: string | null
 }
 
-const first = <T,>(value: T | T[] | null): T | null => (Array.isArray(value) ? value[0] ?? null : value)
+interface ResultadoIntento {
+  nota: number | null
+  estado: string
+  respuestas: DetalleRespuesta[]
+}
 
 export default async function ResultadoEvaluacionPage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -36,7 +42,7 @@ export default async function ResultadoEvaluacionPage({ params }: { params: { id
 
   const { data: evaluacion } = await supabase
     .from('evaluaciones')
-    .select('id, titulo, descripcion, mostrar_respuestas_despues')
+    .select('id, titulo, descripcion')
     .eq('id', params.id)
     .maybeSingle()
 
@@ -56,14 +62,11 @@ export default async function ResultadoEvaluacionPage({ params }: { params: { id
   const aprobado = mejorNota !== null && mejorNota >= 70
   const pendiente = rows.some((row) => row.estado === 'entregado')
 
-  let respuestas: RespuestaRow[] = []
-  if (evaluacion.mostrar_respuestas_despues && ultimo) {
-    const { data } = await supabase
-      .from('respuestas')
-      .select('id, respuesta_json, puntaje_obtenido, preguntas(enunciado, explicacion)')
-      .eq('intento_id', ultimo.id)
-      .order('created_at', { ascending: true })
-    respuestas = (data ?? []) as unknown as RespuestaRow[]
+  let detalle: DetalleRespuesta[] = []
+  if (ultimo) {
+    const { data } = await supabase.rpc('obtener_resultado_intento', { p_intento_id: ultimo.id })
+    const resultado = data as unknown as ResultadoIntento | null
+    detalle = resultado?.respuestas ?? []
   }
 
   return (
@@ -150,31 +153,33 @@ export default async function ResultadoEvaluacionPage({ params }: { params: { id
         </Card>
       )}
 
-      {respuestas.length > 0 && (
+      {detalle.length > 0 && (
         <section className="space-y-4" aria-label="Detalle de respuestas">
           <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
             <Award className="h-5 w-5 text-primary" aria-hidden="true" />
             Detalle de tu último intento
           </h2>
-          {respuestas.map((respuesta, index) => {
-            const pregunta = first(respuesta.preguntas)
+          {detalle.map((item, index) => {
+            const correcta = typeof item.obtenido === 'number' && item.obtenido >= item.puntaje
             return (
-              <Card key={respuesta.id}>
+              <Card key={`${index}-${item.pregunta}`}>
                 <CardContent className="space-y-2 py-4">
                   <p className="font-medium text-foreground">
-                    {index + 1}. {pregunta?.enunciado ?? 'Pregunta'}
+                    {index + 1}. {item.pregunta}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Tu respuesta: {respuesta.respuesta_json?.valor || 'Sin respuesta'}
+                    Tu respuesta: {item.respuesta || 'Sin respuesta'}
                   </p>
-                  {pregunta?.explicacion && (
+                  {item.esperada && (
                     <p className="text-sm text-muted-foreground">
                       <span className="font-medium text-foreground">Respuesta esperada: </span>
-                      {pregunta.explicacion}
+                      {item.esperada}
                     </p>
                   )}
-                  <Badge variant={respuesta.puntaje_obtenido && respuesta.puntaje_obtenido > 0 ? 'default' : 'secondary'}>
-                    {respuesta.puntaje_obtenido === null ? 'En revisión' : `${respuesta.puntaje_obtenido} pts`}
+                  <Badge variant={correcta ? 'default' : 'secondary'}>
+                    {item.obtenido === null
+                      ? 'En revisión'
+                      : `${item.obtenido} / ${item.puntaje} pts`}
                   </Badge>
                 </CardContent>
               </Card>
