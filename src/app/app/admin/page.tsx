@@ -1,105 +1,105 @@
-'use client'
-
-import { useAuth } from '@/hooks/useAuth'
-import { hasAnyRole } from '@/lib/auth/roles'
-import { Users, GraduationCap, ClipboardCheck, Award, BookOpen, TrendingUp, Calendar, Loader2, Shield, CreditCard, Bell, Settings } from 'lucide-react'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { createClient } from '@/lib/supabase/server'
+import { extractRoleName, ROLE_LABELS, type UserRole } from '@/lib/auth/roles'
+import { formatDate } from '@/utils/format'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
-import { cn } from '@/utils/cn'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Users, GraduationCap, ClipboardCheck, Award, BookOpen, Shield } from 'lucide-react'
 
-const stats = [
-  { label: 'Usuarios totales', value: '1,247', change: '+12%', icon: Users, color: 'text-primary' },
-  { label: 'Cursos activos', value: '24', change: '+3', icon: GraduationCap, color: 'text-blue-600' },
-  { label: 'Certificados emitidos', value: '1,089', change: '+45', icon: Award, color: 'text-amber-600' },
-  { label: 'Ingresos mensuales', value: '$12,450', change: '+18%', icon: TrendingUp, color: 'text-green-600' },
-  { label: 'Evaluaciones pendientes', value: '23', change: '-5', icon: ClipboardCheck, color: 'text-amber-600' },
-  { label: 'Afiliaciones activas', value: '312', change: '+8', icon: Shield, color: 'text-purple-600' },
-]
+export const dynamic = 'force-dynamic'
 
 const quickActions = [
-  { label: 'Crear usuario', href: '/app/admin/usuarios/crear', icon: Users, color: 'bg-primary/10 text-primary' },
-  { label: 'Nuevo curso', href: '/app/admin/cursos/crear', icon: GraduationCap, color: 'bg-blue-500/10 text-blue-600' },
-  { label: 'Crear evaluación', href: '/app/admin/evaluaciones/crear', icon: ClipboardCheck, color: 'bg-amber-500/10 text-amber-600' },
-  { label: 'Emitir certificado', href: '/app/admin/certificados/emitir', icon: Award, color: 'bg-amber-500/10 text-amber-600' },
-  { label: 'Gestionar afiliaciones', href: '/app/admin/afiliaciones', icon: Shield, color: 'bg-purple-500/10 text-purple-600' },
-  { label: 'Ver reportes', href: '/app/admin/reportes', icon: TrendingUp, color: 'bg-green-500/10 text-green-600' },
+  { label: 'Usuarios', href: '/app/admin/usuarios', description: 'Ver cuentas y roles', icon: Users },
+  { label: 'Cursos', href: '/app/admin/cursos', description: 'Programa académico y matrículas', icon: GraduationCap },
 ]
 
-const recentUsers = [
-  { id: 1, nombre: 'Carlos Mendoza', email: 'carlos.mendoza@email.com', rol: 'Estudiante', estado: 'Activo', fecha: '15 Oct 2026' },
-  { id: 2, nombre: 'Ana Rodríguez', email: 'ana.rodriguez@email.com', rol: 'Docente', estado: 'Activo', fecha: '14 Oct 2026' },
-  { id: 3, nombre: 'Luis Fernández', email: 'luis.fernandez@email.com', rol: 'Afiliado', estado: 'Pendiente', fecha: '13 Oct 2026' },
-  { id: 4, nombre: 'María González', email: 'maria.gonzalez@email.com', rol: 'Estudiante', estado: 'Activo', fecha: '12 Oct 2026' },
-  { id: 5, nombre: 'Pedro Silva', email: 'pedro.silva@email.com', rol: 'Admin', estado: 'Activo', fecha: '11 Oct 2026' },
+const pendingActions = [
+  { label: 'Crear usuario', description: 'Alta manual desde el panel', icon: Users },
+  { label: 'Crear curso', description: 'Editor de cursos y módulos', icon: BookOpen },
+  { label: 'Emitir certificado', description: 'Emisión con firma y QR', icon: Award },
+  { label: 'Gestionar afiliaciones', description: 'Altas y renovaciones', icon: Shield },
 ]
 
-const recentCourses = [
-  { id: 1, nombre: 'Fundamentos del culturismo natural', codigo: 'MOD-1', docente: 'Dr. Carlos Ruiz', alumnos: 28, estado: 'Publicado' },
-  { id: 2, nombre: 'Biomecánica del ejercicio', codigo: 'MOD-3', docente: 'Dra. Patricia Vega', alumnos: 22, estado: 'Publicado' },
-  { id: 3, nombre: 'Nutrición deportiva avanzada', codigo: 'MOD-8', docente: 'Dr. Roberto Paredes', alumnos: 19, estado: 'Borrador' },
-  { id: 4, nombre: 'Psicología deportiva', codigo: 'MOD-10', docente: 'Dra. Lucía Morales', alumnos: 15, estado: 'Publicado' },
-]
+export default async function AdminPage() {
+  const supabase = await createClient()
 
-export default function AdminPage() {
-  const { profile, loading } = useAuth()
+  const [
+    usuariosCount,
+    cursosCount,
+    evaluacionesCount,
+    certificadosCount,
+    matriculasCount,
+    afiliacionesCount,
+    { data: recentProfiles },
+    { data: roleRows },
+    { data: recentCursos },
+    { data: modulos },
+    { data: matriculas },
+  ] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('cursos').select('id', { count: 'exact', head: true }),
+    supabase.from('evaluaciones').select('id', { count: 'exact', head: true }),
+    supabase.from('certificados').select('id', { count: 'exact', head: true }).eq('estado', 'vigente'),
+    supabase.from('matriculas').select('id', { count: 'exact', head: true }).in('estado', ['activa', 'pendiente']),
+    supabase.from('afiliaciones').select('id', { count: 'exact', head: true }),
+    supabase.from('profiles').select('id, email, full_name, created_at').order('created_at', { ascending: false }).limit(5),
+    supabase.from('user_roles').select('user_id, roles(name)'),
+    supabase.from('cursos').select('id, codigo, nombre, estado').order('created_at', { ascending: true }).limit(5),
+    supabase.from('modulos').select('curso_id'),
+    supabase.from('matriculas').select('curso_id, estado'),
+  ])
 
-  if (loading) {
-    return (
-      <div className="container-inba py-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-            <p className="text-muted-foreground">Cargando panel administrador...</p>
-          </div>
-        </div>
-      </div>
-    )
+  const rolesPorUsuario = new Map<string, UserRole[]>()
+  for (const row of roleRows ?? []) {
+    const list = rolesPorUsuario.get(row.user_id) ?? []
+    const role = extractRoleName((row as { roles?: unknown }).roles)
+    if (role) list.push(role)
+    rolesPorUsuario.set(row.user_id, list)
   }
 
-  if (!hasAnyRole(profile?.roles || [], ['admin_general', 'admin_academico'])) {
-    return (
-      <div className="container-inba py-16 text-center">
-        <h1 className="text-2xl font-bold text-foreground mb-2">Acceso denegado</h1>
-        <p className="text-muted-foreground mb-4">Se requiere rol de Administrador General</p>
-        <p className="text-sm text-muted-foreground">Tu rol actual: {profile?.roles?.join(', ') || 'ninguno'}</p>
-      </div>
-    )
+  const modulosPorCurso = new Map<string, number>()
+  for (const modulo of modulos ?? []) {
+    modulosPorCurso.set(modulo.curso_id, (modulosPorCurso.get(modulo.curso_id) ?? 0) + 1)
   }
+
+  const alumnosPorCurso = new Map<string, number>()
+  for (const matricula of matriculas ?? []) {
+    if (matricula.estado === 'cancelada' || matricula.estado === 'abandonada') continue
+    alumnosPorCurso.set(matricula.curso_id, (alumnosPorCurso.get(matricula.curso_id) ?? 0) + 1)
+  }
+
+  const stats = [
+    { label: 'Usuarios', value: usuariosCount.count ?? 0, icon: Users },
+    { label: 'Cursos', value: cursosCount.count ?? 0, icon: GraduationCap },
+    { label: 'Matrículas activas', value: matriculasCount.count ?? 0, icon: GraduationCap },
+    { label: 'Evaluaciones', value: evaluacionesCount.count ?? 0, icon: ClipboardCheck },
+    { label: 'Certificados vigentes', value: certificadosCount.count ?? 0, icon: Award },
+    { label: 'Afiliaciones', value: afiliacionesCount.count ?? 0, icon: Shield },
+  ]
 
   return (
-    <div className="container-inba py-8 space-y-8">
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="container-inba space-y-8 py-8">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Panel Administrador</h1>
-          <p className="text-muted-foreground mt-1">Gestión completa del sistema INBA Ecuador</p>
+          <p className="mt-1 text-muted-foreground">Gestión de INBA Ecuador</p>
         </div>
-        <div className="flex gap-2">
-          <Link href="/app/admin/usuarios/crear">
-            <Button className="gap-2">
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-              Nuevo usuario
-            </Button>
-          </Link>
-        </div>
+        <Link href="/app/admin/usuarios" className="btn-primary">
+          Ver usuarios
+        </Link>
       </header>
 
       <section aria-label="Estadísticas principales">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {stats.map((stat) => (
             <Card key={stat.label} className="border-l-4 border-primary">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                    <p className="text-3xl font-bold text-foreground mt-1">{stat.value}</p>
-                    <p className="text-sm font-medium mt-1" style={{ color: stat.change.startsWith('+') ? 'green' : 'red' }}>{stat.change} vs mes anterior</p>
+                    <p className="mt-1 text-3xl font-bold text-foreground">{stat.value}</p>
                   </div>
-                  <div className="h-12 w-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: stat.color + '10' }}>
-                    <stat.icon className="h-6 w-6" style={{ color: stat.color }} aria-hidden="true" />
-                  </div>
+                  <stat.icon className="h-6 w-6 text-primary" aria-hidden="true" />
                 </div>
               </CardContent>
             </Card>
@@ -107,106 +107,111 @@ export default function AdminPage() {
         </div>
       </section>
 
-      <section aria-label="Acciones rápidas">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-foreground">Acciones rápidas</h2>
-        </div>
+      <section aria-label="Acciones disponibles">
+        <h2 className="mb-4 text-2xl font-bold text-foreground">Acciones</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => (
-            <Link key={action.label} href={action.href} className="card-inba p-6 space-y-4 transition-all hover:shadow-lg hover:border-primary/50 group">
-              <div className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: action.color }}>
-                <action.icon className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">{action.label}</h3>
-              <span className="inline-flex items-center gap-1 text-sm font-medium text-primary group-hover:translate-x-1 transition-transform">
-                Ir <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-              </span>
+            <Link
+              key={action.label}
+              href={action.href}
+              className="card-inba group space-y-2 p-6 transition-all hover:border-primary/50 hover:shadow-lg"
+            >
+              <action.icon className="h-6 w-6 text-primary" aria-hidden="true" />
+              <h3 className="font-semibold text-foreground group-hover:text-primary">{action.label}</h3>
+              <p className="text-sm text-muted-foreground">{action.description}</p>
             </Link>
+          ))}
+          {pendingActions.map((action) => (
+            <div key={action.label} className="card-inba space-y-2 p-6 opacity-70">
+              <action.icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+              <h3 className="flex items-center gap-2 font-semibold text-foreground">
+                {action.label}
+                <Badge variant="outline" className="text-[10px]">
+                  Próximamente
+                </Badge>
+              </h3>
+              <p className="text-sm text-muted-foreground">{action.description}</p>
+            </div>
           ))}
         </div>
       </section>
 
       <section aria-label="Usuarios recientes">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-2xl font-bold text-foreground">Usuarios recientes</h2>
           <Link href="/app/admin/usuarios" className="text-sm font-medium text-primary hover:underline">
             Ver todos →
           </Link>
         </div>
-        <div className="card-inba overflow-hidden">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left p-4 font-semibold text-muted-foreground">Usuario</th>
-                <th className="text-left p-4 font-semibold text-muted-foreground">Email</th>
-                <th className="text-left p-4 font-semibold text-muted-foreground">Rol</th>
-                <th className="text-left p-4 font-semibold text-muted-foreground">Estado</th>
-                <th className="text-left p-4 font-semibold text-muted-foreground">Registro</th>
-                <th className="text-right p-4 font-semibold text-muted-foreground">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentUsers.map((user) => (
-                <tr key={user.id} className="border-b border-border hover:bg-muted/50">
-                  <td className="p-4">
-                    <div>
-                      <p className="font-medium text-foreground">{user.nombre}</p>
-                    </div>
-                  </td>
-                  <td className="p-4 text-muted-foreground">{user.email}</td>
-                  <td className="p-4">
-                    <Badge variant={user.rol === 'Admin' ? 'destructive' : user.rol === 'Docente' ? 'default' : user.rol === 'Afiliado' ? 'secondary' : 'outline'}>{user.rol}</Badge>
-                  </td>
-                  <td className="p-4">
-                    <Badge variant={user.estado === 'Activo' ? 'success' : 'warning'}>
-                      {user.estado}
-                    </Badge>
-                  </td>
-                  <td className="p-4 text-muted-foreground">{user.fecha}</td>
-                  <td className="p-4 text-right">
-                    <Link href={`/app/admin/usuarios/${user.id}`} className="btn-outline text-sm">Ver</Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            {(recentProfiles ?? []).length === 0 ? (
+              <p className="py-10 text-center text-sm text-muted-foreground">Sin usuarios registrados.</p>
+            ) : (
+              <table className="w-full text-sm">
+                <thead className="text-left text-muted-foreground">
+                  <tr>
+                    <th className="px-6 py-3 font-medium">Nombre</th>
+                    <th className="px-6 py-3 font-medium">Correo</th>
+                    <th className="px-6 py-3 font-medium">Rol</th>
+                    <th className="px-6 py-3 font-medium">Alta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(recentProfiles ?? []).map((profile) => {
+                    const roles = rolesPorUsuario.get(profile.id) ?? []
+                    return (
+                      <tr key={profile.id} className="border-t border-border">
+                        <td className="px-6 py-3 font-medium text-foreground">{profile.full_name || '—'}</td>
+                        <td className="px-6 py-3 text-muted-foreground">{profile.email}</td>
+                        <td className="px-6 py-3">
+                          {roles.length > 0 ? (
+                            <Badge variant="secondary">{ROLE_LABELS[roles[0]] ?? roles[0]}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">Sin rol</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-3 text-muted-foreground">{formatDate(profile.created_at)}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
       </section>
 
-      <section aria-label="Cursos recientes">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-foreground">Cursos recientes</h2>
+      <section aria-label="Cursos">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-foreground">Cursos</h2>
           <Link href="/app/admin/cursos" className="text-sm font-medium text-primary hover:underline">
             Ver todos →
           </Link>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {recentCourses.map((course) => (
-            <article key={course.id} className="card-inba p-6 space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <Badge variant="default">{course.codigo}</Badge>
-                  <h3 className="text-xl font-semibold text-foreground truncate mt-1">{course.nombre}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Docente: {course.docente}</p>
-                </div>
-                <Badge variant={course.estado === 'Publicado' ? 'success' : course.estado === 'Borrador' ? 'secondary' : 'outline'}>{course.estado}</Badge>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="font-medium">Alumnos inscritos</span>
-                    <span className="text-muted-foreground">{course.alumnos}</span>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Programa académico</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {(recentCursos ?? []).length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">Sin cursos creados.</p>
+            ) : (
+              (recentCursos ?? []).map((curso) => (
+                <div key={curso.id} className="flex items-center justify-between gap-4 border-b border-border pb-3 last:border-0 last:pb-0">
+                  <div>
+                    <p className="font-medium text-foreground">{curso.nombre}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {curso.codigo} · {modulosPorCurso.get(curso.id) ?? 0} módulos ·{' '}
+                      {alumnosPorCurso.get(curso.id) ?? 0} alumnos
+                    </p>
                   </div>
+                  <Badge variant={curso.estado === 'publicado' ? 'default' : 'secondary'}>{curso.estado}</Badge>
                 </div>
-                <div className="flex items-center gap-3 pt-2 border-t border-border">
-                  <Badge variant={course.estado === 'Publicado' ? 'success' : 'outline'}>{course.estado}</Badge>
-                  <Link href={`/app/admin/cursos/${course.id}`} className="btn-outline text-sm flex-1 justify-center">Gestionar</Link>
-                  <Link href={`/app/admin/cursos/${course.id}/alumnos`} className="btn-outline text-sm">Ver alumnos</Link>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </section>
     </div>
   )
