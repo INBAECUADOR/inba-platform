@@ -157,7 +157,7 @@ function CompletedCard({ enrollment }: { enrollment: Enrollment }) {
             <p className="text-sm text-muted-foreground">Nº {enrollment.curso.codigo}-{enrollment.id.slice(0, 8)}</p>
           </div>
           <div className="flex gap-2">
-            <Link href={`/app/estudiante/certificados/${enrollment.id}`}>
+            <Link href="/app/estudiante/certificados">
               <Button variant="outline" className="gap-2 flex-1 justify-center">
                 <Award className="h-4 w-4" />
                 Ver certificado
