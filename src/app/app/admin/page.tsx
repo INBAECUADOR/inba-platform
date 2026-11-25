@@ -11,6 +11,7 @@ export const dynamic = 'force-dynamic'
 const quickActions = [
   { label: 'Usuarios', href: '/app/admin/usuarios', description: 'Ver cuentas y roles', icon: Users },
   { label: 'Cursos', href: '/app/admin/cursos', description: 'Programa académico y matrículas', icon: GraduationCap },
+  { label: 'Evaluaciones', href: '/app/admin/evaluaciones', description: 'Preguntas, intentos y promedios', icon: ClipboardCheck },
 ]
 
 const pendingActions = [

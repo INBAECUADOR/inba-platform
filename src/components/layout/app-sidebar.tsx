@@ -39,6 +39,7 @@ const navigation = {
     { label: 'Dashboard', href: '/app/admin', icon: LayoutDashboard },
     { label: 'Usuarios', href: '/app/admin/usuarios', icon: Users },
     { label: 'Cursos', href: '/app/admin/cursos', icon: GraduationCap },
+    { label: 'Evaluaciones', href: '/app/admin/evaluaciones', icon: ClipboardCheck },
   ],
   docente: [
     { label: 'Panel Docente', href: '/app/docente', icon: LayoutDashboard },
