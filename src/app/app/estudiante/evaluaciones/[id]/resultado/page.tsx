@@ -42,11 +42,14 @@ export default async function ResultadoEvaluacionPage({ params }: { params: { id
 
   const { data: evaluacion } = await supabase
     .from('evaluaciones')
-    .select('id, titulo, descripcion')
+    .select('id, titulo, descripcion, curso_id, modulos(orden)')
     .eq('id', params.id)
     .maybeSingle()
 
   if (!evaluacion) notFound()
+
+  const moduloRel = (evaluacion as unknown as { modulos: { orden: number } | { orden: number }[] | null }).modulos
+  const moduloOrden = Array.isArray(moduloRel) ? moduloRel[0]?.orden ?? null : moduloRel?.orden ?? null
 
   const { data: intentos } = await supabase
     .from('intentos_evaluacion')
@@ -154,8 +157,7 @@ export default async function ResultadoEvaluacionPage({ params }: { params: { id
       )}
 
       {detalle.length > 0 && (
-        <section className="space-y-4" aria-label="Detalle de respuestas">
-          <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
+        <section className="space-y-4" aria-label="Detalle de respuestas">          <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
             <Award className="h-5 w-5 text-primary" aria-hidden="true" />
             Detalle de tu último intento
           </h2>
@@ -187,6 +189,29 @@ export default async function ResultadoEvaluacionPage({ params }: { params: { id
           })}
         </section>
       )}
+
+      <Card className="border-primary/30 bg-primary/5">
+        <CardContent className="flex flex-col gap-3 p-5 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            ¿Quieres reforzar los temas antes del siguiente intento? Revisa la guía del módulo con los conceptos clave y
+            las lecturas recomendadas.
+          </p>
+          {moduloOrden && evaluacion.curso_id ? (
+            <Link
+              href={`/app/estudiante/cursos/${evaluacion.curso_id}/guia#modulo-${moduloOrden}`}
+              className="btn-outline shrink-0 justify-center gap-2"
+            >
+              <Award className="h-4 w-4" aria-hidden="true" />
+              Guía del módulo {moduloOrden}
+            </Link>
+          ) : (
+            <Link href="/app/estudiante/cursos" className="btn-outline shrink-0 justify-center gap-2">
+              <Award className="h-4 w-4" aria-hidden="true" />
+              Ir a mis cursos
+            </Link>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

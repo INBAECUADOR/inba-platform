@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Alert } from '@/components/ui/alert'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/utils/cn'
+import { InbaEmblem } from '@/components/brand/inba-logo'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -52,13 +53,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center space-y-4">
-          <Link href="/" className="inline-flex items-center gap-2" aria-label="INBA Ecuador - Inicio">
-            <svg className="h-12 w-12 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" />
-              <path d="M2 17l10 5 10-5" />
-              <path d="M2 12l10 5 10-5" />
-            </svg>
-            <span className="font-bold text-2xl text-foreground">INBA Ecuador</span>
+          <Link href="/" className="inline-flex flex-col items-center gap-2" aria-label="INBA Ecuador - Inicio">
+            <InbaEmblem className="w-32 text-foreground" />
           </Link>
           <h1 className="text-2xl font-bold text-foreground">Iniciar Sesión</h1>
           <p className="text-muted-foreground">

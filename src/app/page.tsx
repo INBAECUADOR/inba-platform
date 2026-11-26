@@ -2,15 +2,11 @@ import Link from 'next/link'
 import { Dumbbell, Trophy, GraduationCap, Users, Shield, BookOpen, ArrowRight, Calendar, Medal, UserPlus, LogIn, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/utils/cn'
+import { createClient } from '@/lib/supabase/server'
+import { formatDate } from '@/utils/format'
+import { InbaEmblem } from '@/components/brand/inba-logo'
 
-export const dynamic = 'force-static'
-
-const stats = [
-  { value: '15+', label: 'Años de experiencia' },
-  { value: '500+', label: 'Atletas certificados' },
-  { value: '12', label: 'Competencias anuales' },
-  { value: '50+', label: 'Entrenadores formados' },
-]
+export const dynamic = 'force-dynamic'
 
 const features = [
   {
@@ -39,13 +35,29 @@ const features = [
   },
 ]
 
-const upcomingEvents = [
-  { name: 'Campeonato Nacional INBA 2026', date: '15-16 Nov 2026', location: 'Quito', status: 'Inscripciones abiertas' },
-  { name: 'Copa Andes Natural', date: '20 Sep 2026', location: 'Guayaquil', status: 'Próximamente' },
-  { name: 'Sudamericano Natural 2026', date: '5-7 Dic 2026', location: 'Cuenca', status: 'En planificación' },
-]
+export default async function HomePage() {
+  const supabase = await createClient()
 
-export default function HomePage() {
+  const [cursos, modulos, lecciones, eventos] = await Promise.all([
+    supabase.from('cursos').select('id', { count: 'exact', head: true }).eq('estado', 'publicado'),
+    supabase.from('modulos').select('id', { count: 'exact', head: true }),
+    supabase.from('lecciones').select('id', { count: 'exact', head: true }),
+    supabase
+      .from('eventos')
+      .select('id, titulo, fecha_inicio, fecha_fin, sede, estado')
+      .eq('estado', 'publicado')
+      .gte('fecha_fin', new Date().toISOString())
+      .order('fecha_inicio', { ascending: true })
+      .limit(3),
+  ])
+
+  const stats = [
+    { value: String(cursos.count ?? 0), label: 'Cursos publicados' },
+    { value: String(modulos.count ?? 0), label: 'Módulos académicos' },
+    { value: String(lecciones.count ?? 0), label: 'Lecciones con contenido' },
+    { value: String((eventos.data ?? []).length), label: 'Próximos eventos' },
+  ]
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -53,13 +65,16 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--accent)_0%,_transparent_70%)] opacity-10" aria-hidden="true" />
         <div className="container-inba relative z-10 py-20">
           <div className="max-w-4xl mx-auto text-center space-y-8">
+            <div className="animate-in fade-in duration-500">
+              <InbaEmblem className="mx-auto w-28 text-foreground sm:w-32" />
+            </div>
             <div className="animate-in slide-in-from-bottom">
               <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
-                Inscripciones abiertas: Certificación Entrenadores 2026
+                Inscripciones abiertas: Certificación Entrenadores 2027
               </span>
             </div>
 
@@ -101,7 +116,7 @@ export default function HomePage() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                 </span>
-                Inscripciones abiertas 2026
+                Inscripciones abiertas
               </div>
               <div className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
@@ -180,35 +195,38 @@ export default function HomePage() {
           </header>
 
           <div className="grid gap-6 md:grid-cols-3">
-            {upcomingEvents.map((event) => (
-              <article key={event.name} className="card-inba p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <time className="font-medium text-foreground">{event.date}</time>
-                </div>
-                <h3 className="text-xl font-semibold text-foreground">{event.name}</h3>
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <span className="h-5 w-5" />
-                  <span>{event.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={cn(
-                    'badge-inba',
-                    event.status === 'Inscripciones abiertas' && 'badge-success',
-                    event.status === 'Próximamente' && 'badge-warning',
-                    event.status === 'En planificación' && 'bg-muted text-muted-foreground border-border'
-                  )}>
-                    {event.status}
-                  </span>
-                </div>
-                <Link
-                  href="/competencias"
-                  className="btn-outline w-full justify-center gap-2"
-                >
-                  Ver detalles <ArrowRight className="h-4 w-4" />
+            {(eventos.data ?? []).length === 0 ? (
+              <p className="col-span-full text-center text-sm text-muted-foreground">
+                El calendario de eventos se publicará próximamente.{' '}
+                <Link href="/competencias/calendario" className="text-primary hover:underline">
+                  Ver calendario
                 </Link>
-              </article>
-            ))}
+              </p>
+            ) : (
+              (eventos.data ?? []).map((event) => (
+                <article key={event.id} className="card-inba p-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
+                    <time className="font-medium text-foreground" dateTime={event.fecha_inicio}>
+                      {formatDate(event.fecha_inicio)}
+                    </time>
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground">{event.titulo}</h3>
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <span>{event.sede}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="badge-inba badge-success">Inscripciones abiertas</span>
+                  </div>
+                  <Link
+                    href="/competencias/calendario"
+                    className="btn-outline w-full justify-center gap-2"
+                  >
+                    Ver detalles <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </article>
+              ))
+            )}
           </div>
 
           <div className="mt-10 text-center">
@@ -250,7 +268,7 @@ export default function HomePage() {
                 </Link>
               </div>
               <p className="text-sm text-primary-foreground/60 mt-4">
-                Próximo inicio: Enero 2026 · Cupos limitados · Modalidad híbrida
+                Próximo inicio: enero 2027 · Cupos limitados · Modalidad híbrida
               </p>
             </div>
           </div>

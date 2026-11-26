@@ -2,12 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Sun, Moon, Dumbbell, GraduationCap, User, LogIn, UserPlus } from 'lucide-react'
+import { Menu, X, Sun, Moon, GraduationCap, User, LogIn, UserPlus } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useTheme } from 'next-themes'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
+import { InbaLogo } from '@/components/brand/inba-logo'
 
 export function Header() {
   const pathname = usePathname()
@@ -44,8 +45,7 @@ export function Header() {
       <nav className="container-inba" aria-label="Navegación principal">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2" aria-label="INBA Ecuador - Inicio">
-            <Dumbbell className="h-8 w-8 text-primary" aria-hidden="true" />
-            <span className="font-bold text-xl text-foreground">INBA Ecuador</span>
+            <InbaLogo />
           </Link>
 
           <div className="hidden md:flex md:items-center md:gap-8">

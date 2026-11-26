@@ -154,6 +154,10 @@ export default async function CursoDetallePage({ params }: { params: { id: strin
             <GraduationCap className="h-4 w-4" aria-hidden="true" />
             Ver mi progreso
           </Link>
+          <Link href={`/app/estudiante/cursos/${curso.id}/guia`} className="btn-ghost gap-2">
+            <BookOpen className="h-4 w-4" aria-hidden="true" />
+            Guía de estudio y lecturas
+          </Link>
         </div>
 
         {!matricula && (

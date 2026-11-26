@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/utils/cn'
+import { createClient } from '@/lib/supabase/server'
+import { formatDate } from '@/utils/format'
 
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'
 
 const categories = [
   { name: 'Men\'s Physique', icon: Dumbbell, color: 'text-blue-500' },
@@ -18,51 +20,15 @@ const categories = [
   { name: 'Junior / Master', icon: Users, color: 'text-green-500' },
 ]
 
-const events = [
-  {
-    name: 'Campeonato Nacional INBA 2026',
-    date: '15-16 Noviembre 2026',
-    location: 'Quito - Teatro Nacional',
-    status: 'Inscripciones abiertas',
-    categories: ['Todas las categorías'],
-    deadline: '01 Nov 2026',
-    link: '/competencias/inscripcion?evento=nacional-2026',
-  },
-  {
-    name: 'Copa Andes Natural 2026',
-    date: '20 Septiembre 2026',
-    location: 'Guayaquil - Centro de Convenciones',
-    status: 'Próximamente',
-    categories: ['Men\'s Physique', 'Classic Physique', 'Bikini'],
-    deadline: '01 Sep 2026',
-    link: '/competencias/inscripcion?evento=andes-2026',
-  },
-  {
-    name: 'Sudamericano Natural 2026',
-    date: '5-7 Diciembre 2026',
-    location: 'Cuenca - Coliseo Jefferson Pérez',
-    status: 'En planificación',
-    categories: ['Todas las categorías'],
-    deadline: '15 Nov 2026',
-    link: '/competencias/inscripcion?evento=sudamericano-2026',
-  },
-  {
-    name: 'Copa Quito Natural',
-    date: '15 Marzo 2026',
-    location: 'Quito - Coliseo Rumiñahui',
-    status: 'Finalizado',
-    categories: ['Bodybuilding', 'Classic Physique', 'Bikini'],
-    results: '/competencias/resultados?evento=quito-2026',
-  },
-  {
-    name: 'Copa Guayaquil Natural',
-    date: '22 Junio 2026',
-    location: 'Guayaquil - Coliseo Voltaire Paladines',
-    status: 'Finalizado',
-    categories: ['Men\'s Physique', 'Classic Physique', 'Bikini'],
-    results: '/competencias/resultados?evento=guayaquil-2026',
-  },
-]
+interface EventoRow {
+  id: string
+  titulo: string
+  descripcion: string | null
+  fecha_inicio: string
+  fecha_fin: string
+  sede: string
+  categorias_json: string[] | null
+}
 
 const categoriesInfo = [
   { name: 'Men\'s Physique', description: 'Evaluación de simetría, muscularidad y presencia escénica. Pantalón de tabla obligatorio.', height: 'Sin límite', weight: 'Sin límite' },
@@ -73,7 +39,18 @@ const categoriesInfo = [
   { name: 'Women\'s Wellness', description: 'Desarrollo de tren inferior prioritario, líneas atléticas femeninas. Traje de dos piezas.', height: 'Sin límite', weight: 'Sin límite' },
 ]
 
-export default function CompetenciasPage() {
+export default async function CompetenciasPage() {
+  const supabase = await createClient()
+  const { data: eventos } = await supabase
+    .from('eventos')
+    .select('id, titulo, descripcion, fecha_inicio, fecha_fin, sede, categorias_json')
+    .eq('estado', 'publicado')
+    .gte('fecha_fin', new Date().toISOString())
+    .order('fecha_inicio', { ascending: true })
+    .limit(6)
+
+  const events = (eventos ?? []) as EventoRow[]
+
   return (
     <div className="flex flex-col">
       {/* Hero */}
@@ -89,7 +66,7 @@ export default function CompetenciasPage() {
             </div>
             <div className="animate-in slide-in-from-bottom duration-300 delay-100 space-y-4">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
-                Calendario <span className="text-gradient-gold">Oficial 2026</span>
+                Calendario <span className="text-gradient-gold">Oficial</span>
               </h1>
               <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
                 Eventos oficiales INBA Ecuador con categorías naturales, jueces certificados y total transparencia.
@@ -125,69 +102,53 @@ export default function CompetenciasPage() {
           </header>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {events.map((event) => (
-              <article key={event.name} className="card-inba p-6 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-primary" />
-                  <time className="font-medium text-foreground">{event.date}</time>
-                </div>
-                <h3 className="text-xl font-semibold text-foreground">{event.name}</h3>
-                <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <MapPin className="h-4 w-4" />
-                  <span>{event.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant={
-                    event.status === 'Inscripciones abiertas' ? 'success' :
-                    event.status === 'Próximamente' ? 'default' :
-                    event.status === 'En planificación' ? 'secondary' :
-                    'outline'
-                  }>
-                    {event.status}
-                  </Badge>
-                  {event.deadline && (
-                    <span className="text-sm text-muted-foreground">
-                      Límite: {event.deadline}
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {event.categories.slice(0, 3).map((cat, i) => (
-                    <Badge key={i} variant="outline" className="text-xs">{cat}</Badge>
-                  ))}
-                  {event.categories.length > 3 && (
-                    <Badge variant="outline" className="text-xs">+{event.categories.length - 3} más</Badge>
-                  )}
-                </div>
-                <div className="flex gap-2 pt-2 border-t border-border">
-                  {event.link && (
-                    <Link href={event.link} className="btn-primary flex-1 justify-center gap-2">
-                      {event.status === 'Finalizado' ? (
-                        <>
-                          <Award className="h-4 w-4" />
-                          Ver resultados
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4" />
-                          Inscribirse
-                        </>
-                      )}
+            {events.length === 0 ? (
+              <p className="col-span-full text-center text-sm text-muted-foreground">
+                Todavía no hay eventos publicados. Consulta el calendario oficial para ver las próximas fechas.
+              </p>
+            ) : (
+              events.map((event) => (
+                <article key={event.id} className="card-inba p-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
+                    <time className="font-medium text-foreground" dateTime={event.fecha_inicio}>
+                      {formatDate(event.fecha_inicio)}
+                    </time>
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground">{event.titulo}</h3>
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <MapPin className="h-4 w-4" aria-hidden="true" />
+                    <span>{event.sede}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="success">Inscripciones abiertas</Badge>
+                  </div>
+                  <div className="flex flex-wrap gap-1">
+                    {(event.categorias_json ?? []).slice(0, 3).map((cat) => (
+                      <Badge key={cat} variant="outline" className="text-xs">
+                        {cat}
+                      </Badge>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 border-t border-border pt-2">
+                    <Link href="/competencias/inscripcion" className="btn-primary flex-1 justify-center gap-2">
+                      <UserPlus className="h-4 w-4" aria-hidden="true" />
+                      Inscribirse
                     </Link>
-                  )}
-                  <Link href="/competencias" className="btn-outline flex-1 justify-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Ver todas
-                  </Link>
-                </div>
-              </article>
-            ))}
+                    <Link href="/competencias/calendario" className="btn-outline flex-1 justify-center gap-2">
+                      <Calendar className="h-4 w-4" aria-hidden="true" />
+                      Ver detalle
+                    </Link>
+                  </div>
+                </article>
+              ))
+            )}
           </div>
 
           <div className="mt-10 text-center">
             <Link href="/competencias/calendario" className="btn-outline gap-2">
               <Calendar className="h-4 w-4" />
-              Ver calendario completo 2026
+              Ver calendario completo
             </Link>
           </div>
         </div>

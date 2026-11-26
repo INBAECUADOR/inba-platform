@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ContenidoLeccion, parseObjetivos } from '@/components/estudiante/contenido-leccion'
 import { MarcarLeccion } from '@/components/estudiante/marcar-leccion'
+import { GuiaModuloCard } from '@/components/estudiante/guia-modulo'
+import { guiaDeModulo } from '@/content/biblioteca'
 import { ArrowLeft, ArrowRight, CheckCircle, ChevronRight, Clock, ListChecks, PlayCircle } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -91,6 +93,7 @@ export default async function LeccionPage({ params }: { params: { id: string; le
   const siguiente = indice >= 0 && indice < planas.length - 1 ? planas[indice + 1] : null
   const objetivos = parseObjetivos(leccion.contenido_json?.objetivos)
   const contenido = leccion.contenido_json?.contenido ?? leccion.descripcion ?? ''
+  const guia = guiaDeModulo(modulo.orden)
 
   return (
     <div className="container-inba max-w-4xl space-y-6 py-8">
@@ -150,6 +153,8 @@ export default async function LeccionPage({ params }: { params: { id: string; le
           </CardContent>
         </Card>
       )}
+
+      {guia && <GuiaModuloCard guia={guia} cursoId={params.id} />}
 
       <div className="flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
         <div>

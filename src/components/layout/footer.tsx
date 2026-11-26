@@ -1,6 +1,7 @@
 import Link from 'next/link'
-import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, Dumbbell, Video } from 'lucide-react'
+import { Facebook, Instagram, Twitter, Mail, MapPin, Phone, Video } from 'lucide-react'
 import { cn } from '@/utils/cn'
+import { InbaEmblem } from '@/components/brand/inba-logo'
 
 const footerLinks = {
   institucion: [
@@ -41,9 +42,8 @@ const socialLinks = [
 ]
 
 const contactInfo = {
-  address: 'Av. 10 de Agosto y Colón, Edificio INBA, Piso 3',
   city: 'Quito, Ecuador',
-  phone: '+593 2 123 4567',
+  phone: '0979191468',
   email: 'info@inbaecuador.org',
 }
 
@@ -55,9 +55,8 @@ export function Footer() {
       <div className="container-inba section-inba">
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2" aria-label="INBA Ecuador - Inicio">
-              <Dumbbell className="h-10 w-10 text-primary" aria-hidden="true" />
-              <span className="font-bold text-2xl text-foreground">INBA Ecuador</span>
+            <Link href="/" aria-label="INBA Ecuador - Inicio" className="block w-28 text-foreground">
+              <InbaEmblem />
             </Link>
             <p className="text-muted-foreground text-sm max-w-xs">
               Federación Ecuatoriana de Culturismo Natural. Promovemos el deporte limpio, la ciencia del entrenamiento y la formación profesional de entrenadores.
@@ -155,10 +154,7 @@ export function Footer() {
             <address className="not-italic space-y-3 text-sm text-muted-foreground">
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <div>
-                  <p>{contactInfo.address}</p>
-                  <p>{contactInfo.city}</p>
-                </div>
+                <p>{contactInfo.city}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 flex-shrink-0" aria-hidden="true" />

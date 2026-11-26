@@ -222,7 +222,7 @@ export default function RegisterPage() {
             <Input
               id="phone"
               type="tel"
-              placeholder="+593 99 999 9999"
+              placeholder="+593 97 919 1468"
               {...register('phone')}
             />
           </div>

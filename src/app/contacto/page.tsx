@@ -9,11 +9,12 @@ export const metadata: Metadata = {
 }
 
 const contactInfo = {
-  address: 'Av. 10 de Agosto y Colón, Edificio INBA, Piso 3',
   city: 'Quito, Ecuador',
-  phone: '+593 2 123 4567',
+  phone: '0979191468',
   email: 'info@inbaecuador.org',
 }
+
+const whatsapp = 'https://wa.me/593979191468'
 
 const temas = [
   { titulo: 'Afiliaciones', descripcion: 'Altas, renovaciones y carnet digital.' },
@@ -42,18 +43,19 @@ export default function ContactoPage() {
               <div className="flex items-start gap-3">
                 <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" aria-hidden="true" />
                 <div>
-                  <p className="font-medium text-foreground">Oficina</p>
-                  <p>{contactInfo.address}</p>
+                  <p className="font-medium text-foreground">Ubicación</p>
                   <p>{contactInfo.city}</p>
+                  <p className="text-xs">Atención con cita previa</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Phone className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" aria-hidden="true" />
                 <div>
-                  <p className="font-medium text-foreground">Teléfono</p>
+                  <p className="font-medium text-foreground">Teléfono / WhatsApp</p>
                   <a href={`tel:${contactInfo.phone}`} className="hover:text-primary">
                     {contactInfo.phone}
                   </a>
+                  <p className="text-xs">Lunes a viernes, 09:00 a 17:00 (hora de Ecuador)</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -66,10 +68,16 @@ export default function ContactoPage() {
                 </div>
               </div>
             </address>
-            <a href={mailto} className="btn-primary w-full gap-2 sm:w-auto">
-              <Mail className="h-4 w-4" aria-hidden="true" />
-              Escribir correo
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <a href={mailto} className="btn-primary w-full gap-2 sm:w-auto">
+                <Mail className="h-4 w-4" aria-hidden="true" />
+                Escribir correo
+              </a>
+              <a href={whatsapp} target="_blank" rel="noopener noreferrer" className="btn-outline w-full gap-2 sm:w-auto">
+                <Phone className="h-4 w-4" aria-hidden="true" />
+                WhatsApp
+              </a>
+            </div>
           </CardContent>
         </Card>
 
