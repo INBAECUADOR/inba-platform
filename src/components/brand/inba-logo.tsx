@@ -27,11 +27,6 @@ function GloboContenido({ idPrefix = 'inba' }: { idPrefix?: string }) {
           <ellipse cx="100" cy="100" rx="72" ry="92" />
           <path d="M8 73h184M8 127h184" />
         </g>
-        <path
-          d="M100 26c14 12 18 26 14 38-4 12-14 18-14 18s-10-6-14-18c-4-12 0-26 14-38Z"
-          fill="#ffffff"
-          fillOpacity="0.9"
-        />
       </g>
       <circle cx="100" cy="100" r="92" fill="none" stroke={FLAG.gold} strokeWidth="6" />
     </>
@@ -77,32 +72,20 @@ export function InbaEmblem({ className }: { className?: string }) {
       </svg>
       <text
         x="210"
-        y="400"
-        textAnchor="middle"
-        fill="currentColor"
-        fontFamily="Arial, Helvetica, sans-serif"
-        fontSize="10"
-        letterSpacing="1.9"
-        opacity="0.75"
-      >
-        INTERNATIONAL NATURAL BODYBUILDING ASSOCIATION
-      </text>
-      <text
-        x="210"
-        y="448"
+        y="432"
         textAnchor="middle"
         fill="currentColor"
         fontFamily="Arial Black, Arial, Helvetica, sans-serif"
-        fontSize="44"
+        fontSize="50"
         fontWeight="800"
         letterSpacing="4"
       >
         ECUADOR
       </text>
-      <circle cx="356" cy="402" r="8" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.7" />
+      <circle cx="358" cy="414" r="8" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.7" />
       <text
-        x="356"
-        y="406"
+        x="358"
+        y="418"
         textAnchor="middle"
         fill="currentColor"
         fontFamily="Arial, Helvetica, sans-serif"

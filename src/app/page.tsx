@@ -38,15 +38,22 @@ const features = [
 export default async function HomePage() {
   const supabase = await createClient()
 
-  const [cursos, modulos, lecciones, eventos] = await Promise.all([
+  const ahora = new Date().toISOString()
+
+  const [cursos, modulos, lecciones, eventosCount, eventos] = await Promise.all([
     supabase.from('cursos').select('id', { count: 'exact', head: true }).eq('estado', 'publicado'),
     supabase.from('modulos').select('id', { count: 'exact', head: true }),
     supabase.from('lecciones').select('id', { count: 'exact', head: true }),
     supabase
       .from('eventos')
+      .select('id', { count: 'exact', head: true })
+      .eq('estado', 'publicado')
+      .gte('fecha_fin', ahora),
+    supabase
+      .from('eventos')
       .select('id, titulo, fecha_inicio, fecha_fin, sede, estado')
       .eq('estado', 'publicado')
-      .gte('fecha_fin', new Date().toISOString())
+      .gte('fecha_fin', ahora)
       .order('fecha_inicio', { ascending: true })
       .limit(3),
   ])
@@ -55,7 +62,7 @@ export default async function HomePage() {
     { value: String(cursos.count ?? 0), label: 'Cursos publicados' },
     { value: String(modulos.count ?? 0), label: 'Módulos académicos' },
     { value: String(lecciones.count ?? 0), label: 'Lecciones con contenido' },
-    { value: String((eventos.data ?? []).length), label: 'Próximos eventos' },
+    { value: String(eventosCount.count ?? 0), label: 'Próximos eventos' },
   ]
 
   return (
