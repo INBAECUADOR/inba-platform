@@ -82,14 +82,14 @@ export function InbaEmblem({ className }: { className?: string }) {
       >
         ECUADOR
       </text>
-      <circle cx="358" cy="414" r="8" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.7" />
+      <circle cx="352" cy="392" r="7" fill="none" stroke="currentColor" strokeWidth="2" opacity="0.7" />
       <text
-        x="358"
-        y="418"
+        x="352"
+        y="396"
         textAnchor="middle"
         fill="currentColor"
         fontFamily="Arial, Helvetica, sans-serif"
-        fontSize="9"
+        fontSize="8"
         opacity="0.7"
       >
         R
